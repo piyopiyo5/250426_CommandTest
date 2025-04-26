@@ -1,0 +1,69 @@
+## Visual Studio一時ファイル
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## ビルド結果
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+## Visual Studio Code
+.vscode/
+.history/
+
+## ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## TeamCity
+_TeamCity*
+
+## パッケージディレクトリ
+**/packages/*
+!**/packages/build/
+
+## VisualStudioのプロジェクト固有のファイル
+*.cache
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+## テスト結果
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## プロファイリング結果
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+## バックアップファイル
+*~
+*.bak
+*.swp
+*.tmp
+
+## ローカル設定
+appsettings.Development.json
+appsettings.Local.json
