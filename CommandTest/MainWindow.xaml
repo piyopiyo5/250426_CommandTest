@@ -5,8 +5,101 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CommandTest"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="TCPサーバー" Height="600" Width="1000">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
 
+        <!-- 接続設定部分 -->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,10,0">
+                <TextBlock Text="IPアドレス:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox x:Name="IpAddressTextBox" Width="120" Text="127.0.0.1"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0">
+                <TextBlock Text="ポート:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox x:Name="PortTextBox" Width="80" Text="8000"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0">
+                <Button x:Name="OpenButton" Content="Open" Width="80" Margin="0,0,5,0" Click="OpenButton_Click"/>
+                <Button x:Name="CloseButton" Content="Close" Width="80" IsEnabled="False" Click="CloseButton_Click"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <TextBlock Text="デリミタ:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <ComboBox x:Name="DelimiterComboBox" Width="80" SelectedIndex="1">
+                    <ComboBoxItem Content="CR"/>
+                    <ComboBoxItem Content="LF"/>
+                    <ComboBoxItem Content="CR+LF"/>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+
+        <!-- コマンド設定部分 -->
+        <GroupBox Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Header="コマンド設定" Margin="10,0,0,0">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,5">
+                    <TextBlock Text="コマンド"/>
+                    <TextBox x:Name="CommandTextBox" Margin="0,0,0,5"/>
+                    <TextBlock Text="レスポンス"/>
+                    <TextBox x:Name="ResponseTextBox" Margin="0,0,0,5"/>
+                    <TextBlock Text="応答時間（ms）"/>
+                    <TextBox x:Name="DelayTextBox" Text="1"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="1" Text="登録済みコマンド" Margin="0,5"/>
+
+                <ListView Grid.Row="2" x:Name="CommandResponseListView" Margin="0,0,0,5" SelectionChanged="CommandResponseListView_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="コマンド" Width="100" DisplayMemberBinding="{Binding Command}"/>
+                            <GridViewColumn Header="レスポンス" Width="100" DisplayMemberBinding="{Binding Response}"/>
+                            <GridViewColumn Header="応答時間" Width="60" DisplayMemberBinding="{Binding DelayMs}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="AddButton" Content="追加" Width="60" Margin="0,0,5,0" Click="AddButton_Click"/>
+                    <Button x:Name="UpdateButton" Content="更新" Width="60" Margin="0,0,5,0" Click="UpdateButton_Click" IsEnabled="False"/>
+                    <Button x:Name="DeleteButton" Content="削除" Width="60" Click="DeleteButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- 送受信履歴表示部分 -->
+        <ListView Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" x:Name="ReceiveHistoryListView" Margin="0,10,10,0">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="時刻" Width="150" DisplayMemberBinding="{Binding Time, StringFormat=yyyy/MM/dd HH:mm:ss.fff}"/>
+                    <GridViewColumn Header="種別" Width="50" DisplayMemberBinding="{Binding Direction}"/>
+                    <GridViewColumn Header="内容" Width="450" DisplayMemberBinding="{Binding Content}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>
