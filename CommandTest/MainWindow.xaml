@@ -5,8 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CommandTest"
         xmlns:models="clr-namespace:CommandTest.Models"
+        xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="コマンド送受信アプリ" Height="800" Width="1200">
+
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo/>
+    </Window.TaskbarItemInfo>
 
     <Window.Resources>
         <models:DelimiterTypeConverter x:Key="DelimiterTypeConverter"/>
@@ -239,7 +244,7 @@
         </TabControl>
 
         <!-- 統計情報部 -->
-        <GroupBox Grid.Row="2" Header="統計情報">
+        <GroupBox Grid.Row="2" Header="統計情報" x:Name="StatisticsGroupBox">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -337,7 +342,8 @@
             
                 <!-- 統計情報操作ボタン -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,5,0">
-                    <Button Content="統計情報クリア" Width="100" Click="ClearStatistics_Click"/>
+                    <Button Content="統計情報クリア" Width="100" Margin="0,0,5,0" Click="ClearStatistics_Click"/>
+                    <Button Content="CSVエクスポート" Width="120" Click="ExportStatistics_Click"/>
                 </StackPanel>
             </Grid>
         </GroupBox>

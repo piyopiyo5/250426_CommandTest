@@ -25,9 +25,9 @@ namespace CommandTest.Models
 
         public string ToCsv()
         {
-            return $"{Timestamp:yyyy/MM/dd HH:mm:ss.fff},{Type},{Data},{Result},{ErrorType},{Location},{ResponseTime}";
+            return $"{Timestamp:yyyy/MM/dd},{Timestamp:H:m:s},{Timestamp:fff},{Type},{Data},{Result},{ErrorType},{Location},{ResponseTime}";
         }
 
-        public static string CsvHeader => "Timestamp,Type,Data,Result,ErrorType,Location,ResponseTime";
+        public static string CsvHeader => "Date,Time,Milliseconds,Type,Data,Result,ErrorType,Location,ResponseTime";
     }
 }

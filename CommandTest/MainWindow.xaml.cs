@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -6,8 +7,32 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Linq;
 using CommandTest.Communications;
 using CommandTest.Models;
+
+static class VisualTreeHelperExtensions
+{
+    public static IEnumerable<T> FindChildren<T>(this DependencyObject parent) where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T childType)
+            {
+                yield return childType;
+            }
+
+            foreach (var descendant in FindChildren<T>(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+}
 
 namespace CommandTest
 {
@@ -330,7 +355,11 @@ namespace CommandTest
             MoveUpButton.IsEnabled = false;
             MoveDownButton.IsEnabled = false;
             SequenceCommandsDataGrid.IsEnabled = false;
+            ConnectButton.IsEnabled = false;
             isSequenceRunning = true;
+
+            // 履歴・統計操作ボタンを無効化
+            DisableOperationButtons();
 
             try
             {
@@ -357,6 +386,40 @@ namespace CommandTest
                 MoveUpButton.IsEnabled = true;
                 MoveDownButton.IsEnabled = true;
                 SequenceCommandsDataGrid.IsEnabled = true;
+                ConnectButton.IsEnabled = true;
+
+                // 履歴・統計操作ボタンを有効化
+                EnableOperationButtons();
+            }
+        }
+
+        private void DisableOperationButtons()
+        {
+            var logPane = (DependencyObject)CommunicationLogDataGrid.Parent;
+            foreach (var button in logPane.FindChildren<Button>())
+            {
+                button.IsEnabled = false;
+            }
+
+            var statsPane = (Panel)((GroupBox)this.FindName("StatisticsGroupBox")).Content;
+            foreach (var button in statsPane.FindChildren<Button>())
+            {
+                button.IsEnabled = false;
+            }
+        }
+
+        private void EnableOperationButtons()
+        {
+            var logPane = (DependencyObject)CommunicationLogDataGrid.Parent;
+            foreach (var button in logPane.FindChildren<Button>())
+            {
+                button.IsEnabled = true;
+            }
+
+            var statsPane = (Panel)((GroupBox)this.FindName("StatisticsGroupBox")).Content;
+            foreach (var button in statsPane.FindChildren<Button>())
+            {
+                button.IsEnabled = true;
             }
         }
 
@@ -396,6 +459,32 @@ namespace CommandTest
             }
         }
 
+        private void ExportStatistics_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                DefaultExt = ".csv",
+                Filter = "CSVファイル (*.csv)|*.csv"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine(CommunicationStatistics.CsvHeader);
+                    sb.AppendLine(statistics.ToCsv());
+
+                    File.WriteAllText(dialog.FileName, sb.ToString(), Encoding.UTF8);
+                    MessageBox.Show("統計情報を保存しました。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"統計情報の保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         private void ExportCommunicationLog_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
@@ -410,7 +499,7 @@ namespace CommandTest
                 {
                     var sb = new StringBuilder();
                     sb.AppendLine(LogEntry.CsvHeader);
-                    foreach (var log in communicationLogs)
+                    foreach (var log in communicationLogs.OrderBy(log => log.Timestamp))
                     {
                         sb.AppendLine(log.ToCsv());
                     }

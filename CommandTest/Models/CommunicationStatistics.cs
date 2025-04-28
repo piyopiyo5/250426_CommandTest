@@ -268,15 +268,15 @@ namespace CommandTest.Models
 
         public string ToCsv()
         {
-            return $"{CurrentConnectionTime.TotalSeconds},{TotalConnectionTime.TotalSeconds}," +
+            return $"{CurrentConnectionTime.TotalSeconds:F3},{TotalConnectionTime.TotalSeconds:F3}," +
                    $"{ConnectionCount},{SendSuccessCount},{SendFailureCount}," +
                    $"{ReceiveSuccessCount},{ReceiveFailureCount}," +
-                   $"{MinResponseTime},{MaxResponseTime},{AverageResponseTime},{CurrentResponseTime}," +
+                   $"{MinResponseTime:F3},{MaxResponseTime:F3},{AverageResponseTime:F3},{CurrentResponseTime:F3}," +
                    $"{TimeoutCount},{ErrorCount}";
         }
 
         public static string CsvHeader => 
-            "CurrentConnectionTime,TotalConnectionTime,ConnectionCount," +
+            "CurrentConnectionTime(s),TotalConnectionTime(s),ConnectionCount," +
             "SendSuccessCount,SendFailureCount,ReceiveSuccessCount,ReceiveFailureCount," +
             "MinResponseTime,MaxResponseTime,AverageResponseTime,CurrentResponseTime," +
             "TimeoutCount,ErrorCount";
