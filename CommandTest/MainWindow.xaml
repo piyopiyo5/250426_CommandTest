@@ -154,6 +154,79 @@
                             Click="ExportCommunicationLog_Click"/>
                 </Grid>
             </TabItem>
+            <TabItem Header="繰り返し送受信">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- シーケンス制御部 -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                        <Button x:Name="AddCommandButton" Content="追加" Width="80" Margin="5" Click="AddCommandButton_Click"/>
+                        <Button x:Name="RemoveCommandButton" Content="削除" Width="80" Margin="5" Click="RemoveCommandButton_Click"/>
+                        <Button x:Name="MoveUpButton" Content="↑" Width="40" Margin="5" Click="MoveUpButton_Click"/>
+                        <Button x:Name="MoveDownButton" Content="↓" Width="40" Margin="5" Click="MoveDownButton_Click"/>
+                        <Button x:Name="StartSequenceButton" Content="開始" Width="80" Margin="5" Click="StartSequenceButton_Click"/>
+                        <Button x:Name="StopSequenceButton" Content="停止" Width="80" Margin="5" Click="StopSequenceButton_Click"/>
+                    </StackPanel>
+
+                    <!-- コマンドリスト -->
+                    <DataGrid Grid.Row="1" 
+                              x:Name="SequenceCommandsDataGrid"
+                              ItemsSource="{Binding SequenceCommands}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              Margin="5">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="コマンド" 
+                                              Binding="{Binding CommandText}" 
+                                              Width="*"/>
+                            <DataGridComboBoxColumn Header="送受信モード" 
+                                                  SelectedValueBinding="{Binding Mode}"
+                                                  Width="120">
+                                <DataGridComboBoxColumn.ElementStyle>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="ItemsSource">
+                                            <Setter.Value>
+                                                <x:Array Type="{x:Type ComboBoxItem}">
+                                                    <ComboBoxItem Content="通常モード" Tag="Normal"/>
+                                                    <ComboBoxItem Content="受信のみ" Tag="NoCommand"/>
+                                                    <ComboBoxItem Content="送信のみ" Tag="NoResponse"/>
+                                                </x:Array>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="SelectedValuePath" Value="Tag"/>
+                                        <Setter Property="DisplayMemberPath" Value="Content"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="ItemsSource">
+                                            <Setter.Value>
+                                                <x:Array Type="{x:Type ComboBoxItem}">
+                                                    <ComboBoxItem Content="通常モード" Tag="Normal"/>
+                                                    <ComboBoxItem Content="受信のみ" Tag="NoCommand"/>
+                                                    <ComboBoxItem Content="送信のみ" Tag="NoResponse"/>
+                                                </x:Array>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="SelectedValuePath" Value="Tag"/>
+                                        <Setter Property="DisplayMemberPath" Value="Content"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
+                            </DataGridComboBoxColumn>
+                            <DataGridTextColumn Header="タイムアウト(ms)" 
+                                              Binding="{Binding Timeout}" 
+                                              Width="100"/>
+                            <DataGridTextColumn Header="待ち時間(ms)" 
+                                              Binding="{Binding Interval}" 
+                                              Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
         </TabControl>
 
         <!-- 統計情報部 -->

@@ -16,10 +16,13 @@ namespace CommandTest
         private readonly ICommunicator communicator;
         private Command singleCommand;
         private readonly ObservableCollection<LogEntry> communicationLogs;
+        private readonly ObservableCollection<Command> sequenceCommands;
         private readonly CommunicationSettings settings;
         private readonly CommunicationStatistics statistics;
         private bool isConnected;
+        private bool isSequenceRunning;
         private readonly System.Windows.Threading.DispatcherTimer connectionTimer;
+        private CancellationTokenSource? sequenceCts;
 
         public Command SingleCommand
         {
@@ -32,6 +35,7 @@ namespace CommandTest
         }
 
         public ObservableCollection<LogEntry> CommunicationLogs => communicationLogs;
+        public ObservableCollection<Command> SequenceCommands => sequenceCommands;
         public CommunicationSettings Settings => settings;
         public CommunicationStatistics Statistics => statistics;
 
@@ -44,6 +48,7 @@ namespace CommandTest
             statistics = new CommunicationStatistics();
             communicator = new TcpCommunicator(settings);
             communicationLogs = new ObservableCollection<LogEntry>();
+            sequenceCommands = new ObservableCollection<Command>();
             singleCommand = new Command();
 
             connectionTimer = new System.Windows.Threading.DispatcherTimer
@@ -240,6 +245,122 @@ namespace CommandTest
             });
 
             statistics.IncrementError();
+        }
+
+        private void AddCommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            SequenceCommands.Add(new Command
+            {
+                CommandText = "",
+                Mode = "Normal",
+                Timeout = 1000,
+                Interval = 0
+            });
+        }
+
+        private void RemoveCommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SequenceCommandsDataGrid.SelectedItem is Command command)
+            {
+                SequenceCommands.Remove(command);
+            }
+        }
+
+        private void MoveUpButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SequenceCommandsDataGrid.SelectedItem is Command command)
+            {
+                var index = SequenceCommands.IndexOf(command);
+                if (index > 0)
+                {
+                    SequenceCommands.Move(index, index - 1);
+                }
+            }
+        }
+
+        private void MoveDownButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SequenceCommandsDataGrid.SelectedItem is Command command)
+            {
+                var index = SequenceCommands.IndexOf(command);
+                if (index < SequenceCommands.Count - 1)
+                {
+                    SequenceCommands.Move(index, index + 1);
+                }
+            }
+        }
+
+        private async void StartSequenceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isConnected)
+            {
+                MessageBox.Show("先に接続してください。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (SequenceCommands.Count == 0)
+            {
+                MessageBox.Show("コマンドが登録されていません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (isSequenceRunning)
+            {
+                MessageBox.Show("すでにシーケンスを実行中です。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            StartSequenceButton.IsEnabled = false;
+            AddCommandButton.IsEnabled = false;
+            RemoveCommandButton.IsEnabled = false;
+            MoveUpButton.IsEnabled = false;
+            MoveDownButton.IsEnabled = false;
+            SequenceCommandsDataGrid.IsEnabled = false;
+            isSequenceRunning = true;
+
+            try
+            {
+                sequenceCts = new CancellationTokenSource();
+                await ExecuteSequence(sequenceCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                LogMessage("Info", "シーケンスを停止しました", "Success");
+            }
+            catch (Exception ex)
+            {
+                LogError("Sequence", ex.Message);
+                MessageBox.Show($"シーケンス実行エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                sequenceCts?.Dispose();
+                sequenceCts = null;
+                isSequenceRunning = false;
+                StartSequenceButton.IsEnabled = true;
+                AddCommandButton.IsEnabled = true;
+                RemoveCommandButton.IsEnabled = true;
+                MoveUpButton.IsEnabled = true;
+                MoveDownButton.IsEnabled = true;
+                SequenceCommandsDataGrid.IsEnabled = true;
+            }
+        }
+
+        private void StopSequenceButton_Click(object sender, RoutedEventArgs e)
+        {
+            sequenceCts?.Cancel();
+        }
+
+        private async Task ExecuteSequence(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                foreach (var command in SequenceCommands)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await ExecuteCommand(command);
+                }
+            }
         }
 
         private void ExportCommunicationLog_Click(object sender, RoutedEventArgs e)
