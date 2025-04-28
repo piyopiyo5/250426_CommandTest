@@ -51,6 +51,7 @@ namespace CommandTest
                 Interval = TimeSpan.FromSeconds(1)
             };
             connectionTimer.Tick += ConnectionTimer_Tick;
+            connectionTimer.Start();  // タイマーを起動
         }
 
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)
@@ -204,6 +205,7 @@ namespace CommandTest
         private void ConnectionTimer_Tick(object sender, EventArgs e)
         {
             statistics.UpdateConnectionTime();
+            OnPropertyChanged(nameof(Statistics));  // 統計情報の更新を通知
         }
 
         private void LogMessage(string type, string data, string result, double responseTime = 0)

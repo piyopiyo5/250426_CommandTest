@@ -1,22 +1,192 @@
 using System;
+using System.ComponentModel;
 
 namespace CommandTest.Models
 {
-    public class CommunicationStatistics
+    public class CommunicationStatistics : INotifyPropertyChanged
     {
-        public TimeSpan CurrentConnectionTime { get; private set; }
-        public TimeSpan TotalConnectionTime { get; private set; }
-        public int ConnectionCount { get; private set; }
-        public int SendSuccessCount { get; private set; }
-        public int SendFailureCount { get; private set; }
-        public int ReceiveSuccessCount { get; private set; }
-        public int ReceiveFailureCount { get; private set; }
-        public double MinResponseTime { get; private set; } = double.MaxValue;
-        public double MaxResponseTime { get; private set; }
-        public double AverageResponseTime { get; private set; }
-        public double CurrentResponseTime { get; private set; }
-        public int TimeoutCount { get; private set; }
-        public int ErrorCount { get; private set; }
+        private TimeSpan currentConnectionTime;
+        private TimeSpan totalConnectionTime;
+        private int connectionCount;
+        private int sendSuccessCount;
+        private int sendFailureCount;
+        private int receiveSuccessCount;
+        private int receiveFailureCount;
+        private double minResponseTime = double.MaxValue;
+        private double maxResponseTime;
+        private double averageResponseTime;
+        private double currentResponseTime;
+        private int timeoutCount;
+        private int errorCount;
+
+        public TimeSpan CurrentConnectionTime
+        {
+            get => currentConnectionTime;
+            private set
+            {
+                if (currentConnectionTime != value)
+                {
+                    currentConnectionTime = value;
+                    OnPropertyChanged(nameof(CurrentConnectionTime));
+                }
+            }
+        }
+
+        public TimeSpan TotalConnectionTime
+        {
+            get => totalConnectionTime;
+            private set
+            {
+                if (totalConnectionTime != value)
+                {
+                    totalConnectionTime = value;
+                    OnPropertyChanged(nameof(TotalConnectionTime));
+                }
+            }
+        }
+
+        public int ConnectionCount
+        {
+            get => connectionCount;
+            private set
+            {
+                if (connectionCount != value)
+                {
+                    connectionCount = value;
+                    OnPropertyChanged(nameof(ConnectionCount));
+                }
+            }
+        }
+
+        public int SendSuccessCount
+        {
+            get => sendSuccessCount;
+            private set
+            {
+                if (sendSuccessCount != value)
+                {
+                    sendSuccessCount = value;
+                    OnPropertyChanged(nameof(SendSuccessCount));
+                }
+            }
+        }
+
+        public int SendFailureCount
+        {
+            get => sendFailureCount;
+            private set
+            {
+                if (sendFailureCount != value)
+                {
+                    sendFailureCount = value;
+                    OnPropertyChanged(nameof(SendFailureCount));
+                }
+            }
+        }
+
+        public int ReceiveSuccessCount
+        {
+            get => receiveSuccessCount;
+            private set
+            {
+                if (receiveSuccessCount != value)
+                {
+                    receiveSuccessCount = value;
+                    OnPropertyChanged(nameof(ReceiveSuccessCount));
+                }
+            }
+        }
+
+        public int ReceiveFailureCount
+        {
+            get => receiveFailureCount;
+            private set
+            {
+                if (receiveFailureCount != value)
+                {
+                    receiveFailureCount = value;
+                    OnPropertyChanged(nameof(ReceiveFailureCount));
+                }
+            }
+        }
+
+        public double MinResponseTime
+        {
+            get => minResponseTime;
+            private set
+            {
+                if (minResponseTime != value)
+                {
+                    minResponseTime = value;
+                    OnPropertyChanged(nameof(MinResponseTime));
+                }
+            }
+        }
+
+        public double MaxResponseTime
+        {
+            get => maxResponseTime;
+            private set
+            {
+                if (maxResponseTime != value)
+                {
+                    maxResponseTime = value;
+                    OnPropertyChanged(nameof(MaxResponseTime));
+                }
+            }
+        }
+
+        public double AverageResponseTime
+        {
+            get => averageResponseTime;
+            private set
+            {
+                if (averageResponseTime != value)
+                {
+                    averageResponseTime = value;
+                    OnPropertyChanged(nameof(AverageResponseTime));
+                }
+            }
+        }
+
+        public double CurrentResponseTime
+        {
+            get => currentResponseTime;
+            private set
+            {
+                if (currentResponseTime != value)
+                {
+                    currentResponseTime = value;
+                    OnPropertyChanged(nameof(CurrentResponseTime));
+                }
+            }
+        }
+
+        public int TimeoutCount
+        {
+            get => timeoutCount;
+            private set
+            {
+                if (timeoutCount != value)
+                {
+                    timeoutCount = value;
+                    OnPropertyChanged(nameof(TimeoutCount));
+                }
+            }
+        }
+
+        public int ErrorCount
+        {
+            get => errorCount;
+            private set
+            {
+                if (errorCount != value)
+                {
+                    errorCount = value;
+                    OnPropertyChanged(nameof(ErrorCount));
+                }
+            }
+        }
 
         private DateTime? connectionStartTime;
         private double totalResponseTime;
@@ -40,6 +210,14 @@ namespace CommandTest.Models
             connectionStartTime = null;
             totalResponseTime = 0;
             responseCount = 0;
+            OnPropertyChanged(nameof(ConnectionCount));
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void UpdateConnectionTime()
