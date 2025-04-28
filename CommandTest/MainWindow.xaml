@@ -183,40 +183,32 @@
                             <DataGridTextColumn Header="コマンド" 
                                               Binding="{Binding CommandText}" 
                                               Width="*"/>
-                            <DataGridComboBoxColumn Header="送受信モード" 
-                                                  SelectedValueBinding="{Binding Mode}"
-                                                  Width="120">
-                                <DataGridComboBoxColumn.ElementStyle>
-                                    <Style TargetType="ComboBox">
-                                        <Setter Property="ItemsSource">
-                                            <Setter.Value>
-                                                <x:Array Type="{x:Type ComboBoxItem}">
-                                                    <ComboBoxItem Content="通常モード" Tag="Normal"/>
-                                                    <ComboBoxItem Content="受信のみ" Tag="NoCommand"/>
-                                                    <ComboBoxItem Content="送信のみ" Tag="NoResponse"/>
-                                                </x:Array>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="SelectedValuePath" Value="Tag"/>
-                                        <Setter Property="DisplayMemberPath" Value="Content"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.ElementStyle>
-                                <DataGridComboBoxColumn.EditingElementStyle>
-                                    <Style TargetType="ComboBox">
-                                        <Setter Property="ItemsSource">
-                                            <Setter.Value>
-                                                <x:Array Type="{x:Type ComboBoxItem}">
-                                                    <ComboBoxItem Content="通常モード" Tag="Normal"/>
-                                                    <ComboBoxItem Content="受信のみ" Tag="NoCommand"/>
-                                                    <ComboBoxItem Content="送信のみ" Tag="NoResponse"/>
-                                                </x:Array>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="SelectedValuePath" Value="Tag"/>
-                                        <Setter Property="DisplayMemberPath" Value="Content"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.EditingElementStyle>
-                            </DataGridComboBoxColumn>
+                            <DataGridTemplateColumn Header="送受信モード" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource CommandModeConverter}">
+                                                    <Binding Path="Mode"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox SelectedValue="{Binding Mode, UpdateSourceTrigger=PropertyChanged}"
+                                                 SelectedValuePath="Tag"
+                                                 Width="110"
+                                                 Height="22"
+                                                 VerticalContentAlignment="Center">
+                                            <ComboBoxItem Content="通常モード" Tag="Normal"/>
+                                            <ComboBoxItem Content="受信のみ" Tag="NoCommand"/>
+                                            <ComboBoxItem Content="送信のみ" Tag="NoResponse"/>
+                                        </ComboBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="タイムアウト(ms)" 
                                               Binding="{Binding Timeout}" 
                                               Width="100"/>

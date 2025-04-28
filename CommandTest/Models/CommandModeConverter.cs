@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace CommandTest.Models
 {
-    public class CommandModeConverter : IValueConverter
+    public class CommandModeConverter : IValueConverter, IMultiValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -34,6 +34,21 @@ namespace CommandTest.Models
                 };
             }
             return value;
+        }
+
+        // IMultiValueConverterの実装
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length > 0 && values[0] is string mode)
+            {
+                return Convert(mode, targetType, parameter, culture);
+            }
+            return values[0];
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            return new object[] { ConvertBack(value, targetTypes[0], parameter, culture) };
         }
     }
 }
