@@ -5,8 +5,8 @@ namespace CommandTest.Models
     public class CommunicationSettings : INotifyPropertyChanged
     {
         private string ipAddress = "127.0.0.1";
-        private int port = 8080;
-        private string delimiter = "CRLF";
+        private int port = 8000;
+        private string delimiter = "LF";
 
         public string IpAddress
         {

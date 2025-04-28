@@ -31,13 +31,27 @@
             </Grid.ColumnDefinitions>
 
             <GroupBox Grid.Column="0" Header="通信設定" Margin="0,0,10,0">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="IPアドレス:" VerticalAlignment="Center"/>
-                    <TextBox x:Name="IpAddressTextBox" Width="120" Margin="5,0" Text="{Binding Settings.IpAddress, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Label Content="ポート:" VerticalAlignment="Center"/>
-                    <TextBox x:Name="PortTextBox" Width="60" Margin="5,0" Text="{Binding Settings.Port}"/>
-                    <Button x:Name="ConnectButton" Content="接続" Width="80" Margin="10,0,0,0" Click="ConnectButton_Click"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Label Content="IPアドレス:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="IpAddressTextBox" Width="120" Margin="5,0" Text="{Binding Settings.IpAddress, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Label Content="ポート:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="PortTextBox" Width="60" Margin="5,0" Text="{Binding Settings.Port}"/>
+                        <Button x:Name="ConnectButton" Content="接続" Width="80" Margin="10,0,0,0" Click="ConnectButton_Click"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" BorderThickness="1,0,0,0" BorderBrush="Gray" Margin="10,0">
+                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <Label Content="接続状態:" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ConnectionState}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </GroupBox>
 
             <GroupBox Grid.Column="1" Header="デリミタ設定" Margin="0,0,10,0">
@@ -129,7 +143,12 @@
 
                     <!-- 送受信履歴 -->
                     <GroupBox Grid.Row="1" Header="送受信履歴" Margin="5">
-                        <DataGrid x:Name="CommunicationLogDataGrid"
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                        <DataGrid Grid.Row="0" x:Name="CommunicationLogDataGrid"
                                   ItemsSource="{Binding CommunicationLogs}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
@@ -143,15 +162,13 @@
                                 <DataGridTextColumn Header="応答時間(ms)" Binding="{Binding ResponseTime, StringFormat=F1}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                                <Button Content="履歴クリア" Width="100" Margin="0,0,5,0" Click="ClearCommunicationLog_Click"/>
+                                <Button Content="CSVエクスポート" Width="120" Click="ExportCommunicationLog_Click"/>
+                            </StackPanel>
+                        </Grid>
                     </GroupBox>
 
-                    <!-- エクスポートボタン -->
-                    <Button Grid.Row="2" 
-                            Content="CSVエクスポート"
-                            HorizontalAlignment="Right"
-                            Width="120"
-                            Margin="5"
-                            Click="ExportCommunicationLog_Click"/>
                 </Grid>
             </TabItem>
             <TabItem Header="繰り返し送受信">
@@ -224,6 +241,12 @@
         <!-- 統計情報部 -->
         <GroupBox Grid.Row="2" Header="統計情報">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -310,6 +333,12 @@
                         </TextBlock>
                     </StackPanel>
                 </GroupBox>
+                </Grid>
+            
+                <!-- 統計情報操作ボタン -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,5,0">
+                    <Button Content="統計情報クリア" Width="100" Click="ClearStatistics_Click"/>
+                </StackPanel>
             </Grid>
         </GroupBox>
     </Grid>

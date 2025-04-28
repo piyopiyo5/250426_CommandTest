@@ -21,6 +21,18 @@ namespace CommandTest
         private readonly CommunicationStatistics statistics;
         private bool isConnected;
         private bool isSequenceRunning;
+        private string connectionState = "未接続";
+
+        public string ConnectionState
+        {
+            get => connectionState;
+            set
+            {
+                connectionState = value;
+                OnPropertyChanged(nameof(ConnectionState));
+            }
+        }
+
         private readonly System.Windows.Threading.DispatcherTimer connectionTimer;
         private CancellationTokenSource? sequenceCts;
 
@@ -75,6 +87,7 @@ namespace CommandTest
                     connectionTimer.Start();
 
                     LogMessage("Info", "接続しました", "Success");
+                    ConnectionState = "接続中";
                 }
                 else
                 {
@@ -85,6 +98,7 @@ namespace CommandTest
                     connectionTimer.Stop();
 
                     LogMessage("Info", "切断しました", "Success");
+                    ConnectionState = "未接続";
                 }
             }
             catch (Exception ex)
@@ -363,6 +377,25 @@ namespace CommandTest
             }
         }
 
+        private void ClearCommunicationLog_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("送受信履歴をクリアしますか？", "確認", 
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                communicationLogs.Clear();
+            }
+        }
+
+        private void ClearStatistics_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("統計情報をクリアしますか？", "確認", 
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                statistics.Reset();
+                OnPropertyChanged(nameof(Statistics));
+            }
+        }
+
         private void ExportCommunicationLog_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
@@ -398,5 +431,6 @@ namespace CommandTest
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
     }
 }
