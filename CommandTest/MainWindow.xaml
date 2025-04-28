@@ -4,9 +4,248 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CommandTest"
+        xmlns:models="clr-namespace:CommandTest.Models"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="コマンド送受信アプリ" Height="800" Width="1200">
 
+    <Window.Resources>
+        <models:DelimiterTypeConverter x:Key="DelimiterTypeConverter"/>
+        <models:CommandModeConverter x:Key="CommandModeConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 設定部 -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Grid.Column="0" Header="通信設定" Margin="0,0,10,0">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="IPアドレス:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="IpAddressTextBox" Width="120" Margin="5,0" Text="{Binding Settings.IpAddress, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Label Content="ポート:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="PortTextBox" Width="60" Margin="5,0" Text="{Binding Settings.Port}"/>
+                    <Button x:Name="ConnectButton" Content="接続" Width="80" Margin="10,0,0,0" Click="ConnectButton_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Grid.Column="1" Header="デリミタ設定" Margin="0,0,10,0">
+                <ComboBox x:Name="DelimiterComboBox" Width="120" 
+                         SelectedValuePath="Tag"
+                         SelectedValue="{Binding Settings.Delimiter}">
+                    <ComboBoxItem Tag="CR">
+                        <TextBlock Text="CR (\r)"/>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="LF">
+                        <TextBlock Text="LF (\n)"/>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="CRLF">
+                        <TextBlock Text="CR+LF (\r\n)"/>
+                    </ComboBoxItem>
+                </ComboBox>
+            </GroupBox>
+        </Grid>
+
+        <!-- コマンド実行部 -->
+        <TabControl Grid.Row="1" Margin="0,0,0,10">
+            <TabItem Header="単発送受信">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- コマンド入力部 -->
+                    <GroupBox Grid.Row="0" Header="コマンド設定" Margin="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox Grid.Row="0" Grid.Column="0" 
+                                     x:Name="CommandTextBox"
+                                     Text="{Binding SingleCommand.CommandText, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="5"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     MinHeight="50"/>
+
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="5">
+                                <GroupBox Header="送受信モード">
+                                    <ComboBox x:Name="CommandModeComboBox" 
+                                            Width="120"
+                                            Margin="5"
+                                            SelectedValuePath="Tag"
+                                            SelectedValue="{Binding SingleCommand.Mode}">
+                                        <ComboBoxItem Tag="Normal">
+                                            <TextBlock Text="通常モード"/>
+                                        </ComboBoxItem>
+                                        <ComboBoxItem Tag="NoCommand">
+                                            <TextBlock Text="受信のみ"/>
+                                        </ComboBoxItem>
+                                        <ComboBoxItem Tag="NoResponse">
+                                            <TextBlock Text="送信のみ"/>
+                                        </ComboBoxItem>
+                                    </ComboBox>
+                                </GroupBox>
+                                <GroupBox Header="タイムアウト(ms)">
+                                    <TextBox x:Name="TimeoutTextBox" 
+                                           Text="{Binding SingleCommand.Timeout}"
+                                           Width="120"
+                                           Margin="5"/>
+                                </GroupBox>
+                                <GroupBox Header="待ち時間(ms)">
+                                    <TextBox x:Name="IntervalTextBox" 
+                                           Text="{Binding SingleCommand.Interval}"
+                                           Width="120"
+                                           Margin="5"/>
+                                </GroupBox>
+                                <Button x:Name="ExecuteButton" 
+                                        Content="実行"
+                                        Width="120"
+                                        Margin="5"
+                                        Click="ExecuteButton_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- 送受信履歴 -->
+                    <GroupBox Grid.Row="1" Header="送受信履歴" Margin="5">
+                        <DataGrid x:Name="CommunicationLogDataGrid"
+                                  ItemsSource="{Binding CommunicationLogs}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="タイムスタンプ" Binding="{Binding Timestamp, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Width="150"/>
+                                <DataGridTextColumn Header="種別" Binding="{Binding Type}" Width="80"/>
+                                <DataGridTextColumn Header="データ" Binding="{Binding Data}" Width="*"/>
+                                <DataGridTextColumn Header="結果" Binding="{Binding Result}" Width="*"/>
+                                <DataGridTextColumn Header="応答時間(ms)" Binding="{Binding ResponseTime, StringFormat=F1}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <!-- エクスポートボタン -->
+                    <Button Grid.Row="2" 
+                            Content="CSVエクスポート"
+                            HorizontalAlignment="Right"
+                            Width="120"
+                            Margin="5"
+                            Click="ExportCommunicationLog_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- 統計情報部 -->
+        <GroupBox Grid.Row="2" Header="統計情報">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 接続情報 -->
+                <GroupBox Grid.Column="0" Header="接続情報" Margin="5">
+                    <StackPanel>
+                        <TextBlock>
+                            <Run Text="現在の接続時間: "/>
+                            <Run Text="{Binding Statistics.CurrentConnectionTime, StringFormat=hh\\:mm\\:ss, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="累計接続時間: "/>
+                            <Run Text="{Binding Statistics.TotalConnectionTime, StringFormat=hh\\:mm\\:ss, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="接続回数: "/>
+                            <Run Text="{Binding Statistics.ConnectionCount, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 送受信カウンター -->
+                <GroupBox Grid.Column="1" Header="送受信カウンター" Margin="5">
+                    <StackPanel>
+                        <TextBlock>
+                            <Run Text="送信成功: "/>
+                            <Run Text="{Binding Statistics.SendSuccessCount, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="送信失敗: "/>
+                            <Run Text="{Binding Statistics.SendFailureCount, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="受信成功: "/>
+                            <Run Text="{Binding Statistics.ReceiveSuccessCount, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="受信失敗: "/>
+                            <Run Text="{Binding Statistics.ReceiveFailureCount, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- 応答時間 -->
+                <GroupBox Grid.Column="2" Header="応答時間" Margin="5">
+                    <StackPanel>
+                        <TextBlock>
+                            <Run Text="最小: "/>
+                            <Run Text="{Binding Statistics.MinResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="ms"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="最大: "/>
+                            <Run Text="{Binding Statistics.MaxResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="ms"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="平均: "/>
+                            <Run Text="{Binding Statistics.AverageResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="ms"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="現在: "/>
+                            <Run Text="{Binding Statistics.CurrentResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="ms"/>
+                        </TextBlock>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- エラーカウンター -->
+                <GroupBox Grid.Column="3" Header="エラーカウンター" Margin="5">
+                    <StackPanel>
+                        <TextBlock>
+                            <Run Text="タイムアウト: "/>
+                            <Run Text="{Binding Statistics.TimeoutCount, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="その他エラー: "/>
+                            <Run Text="{Binding Statistics.ErrorCount, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
     </Grid>
 </Window>
