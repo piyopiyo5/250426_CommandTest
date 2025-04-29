@@ -161,11 +161,16 @@ CommandTest/
 #### 3.3.3 送受信制御
 1. タイミング制御
    - タイムアウト時間：コマンドごとに個別設定
-   - 待ち時間：コマンドごとに個別設定
+   - 待ち時間：コマンド間で一元管理
+     - 最後に実行したコマンドの待ち時間が次のコマンド実行を制御
+     - 異なる送受信モード（単発/繰り返し）をまたいだ待ち時間管理
+     - 例：コマンドA（繰り返し、待ち時間1秒）の実行中にコマンドB（単発、待ち時間10秒）が要求された場合
+       1. コマンドAのレスポンス受信後、1秒待ってからコマンドBを実行
+       2. コマンドBのレスポンス受信後、10秒待ってからコマンドAの繰り返し送受信を再開
 
 2. 混在実行制御
    - 繰り返し送受信実行中の単発送信
-     - 繰り返しサイクル完了後に実行
+     - 最後に実行したコマンドの待ち時間経過後に実行
      - 単発コマンドの待ち時間経過後に繰り返し再開
 
 ### 3.4 ログ・統計機能
@@ -217,6 +222,7 @@ classDiagram
         -List<LogEntry> communicationLogs
         -CommunicationStatistics statistics
         -CommunicationSettings settings
+        -CommandExecutionManager executionManager
         -bool isSequenceRunning
         -string connectionState
         +Initialize()
@@ -320,11 +326,20 @@ classDiagram
         +object ConvertBack()
     }
 
+    class CommandExecutionManager {
+        -DateTime lastExecutionTime
+        -int lastWaitTime
+        +bool CanExecuteCommand(Command command)
+        +void NotifyCommandExecution(Command command)
+        +double GetElapsedTime()
+    }
+
     MainWindow --> ICommunicator
     MainWindow --> Command
     MainWindow --> CommunicationSettings
     MainWindow --> CommunicationStatistics
     MainWindow --> LogEntry
+    MainWindow --> CommandExecutionManager
     TcpCommunicator ..|> ICommunicator
     TcpCommunicator --> CommunicationSettings
 ```

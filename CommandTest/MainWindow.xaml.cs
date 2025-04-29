@@ -44,6 +44,7 @@ namespace CommandTest
         private readonly ObservableCollection<Command> sequenceCommands;
         private readonly CommunicationSettings settings;
         private readonly CommunicationStatistics statistics;
+        private readonly CommandExecutionManager executionManager;
         private bool isConnected;
         private bool isSequenceRunning;
         private string connectionState = "未接続";
@@ -84,6 +85,8 @@ namespace CommandTest
             settings = new CommunicationSettings();
             statistics = new CommunicationStatistics();
             communicator = new TcpCommunicator(settings);
+            executionManager = new CommandExecutionManager(communicator);
+            executionManager.CommandExecutionCompleted += OnCommandExecutionCompleted;
             communicationLogs = new ObservableCollection<LogEntry>();
             sequenceCommands = new ObservableCollection<Command>();
             singleCommand = new Command();
@@ -137,7 +140,7 @@ namespace CommandTest
             }
         }
 
-        private async void ExecuteButton_Click(object sender, RoutedEventArgs e)
+        private void ExecuteButton_Click(object sender, RoutedEventArgs e)
         {
             if (!isConnected)
             {
@@ -152,104 +155,55 @@ namespace CommandTest
             }
 
             ExecuteButton.IsEnabled = false;
-
-            try
-            {
-                await ExecuteCommand(SingleCommand);
-            }
-            catch (Exception ex)
-            {
-                LogError("Execution", ex.Message);
-                MessageBox.Show($"実行エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                ExecuteButton.IsEnabled = true;
-            }
+            executionManager.EnqueueCommand(SingleCommand, false);
         }
 
-        private async Task ExecuteCommand(Command command)
+        private async void OnCommandExecutionCompleted(object? sender, CommandExecutionEventArgs e)
         {
-            command.StartExecution();
-
-            try
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                switch (command.Mode)
+                var request = e.Request;
+                var command = request.Command;
+                var elapsed = request.ExecutionEndTime!.Value.Subtract(request.ExecutionStartTime).TotalMilliseconds;
+
+                if (command.Mode == "Normal")
                 {
-                    case "Normal":
-                        await ExecuteNormalMode(command);
-                        break;
-
-                    case "NoCommand":
-                        await ExecuteNoCommandMode(command);
-                        break;
-
-                    case "NoResponse":
-                        await ExecuteNoResponseMode(command);
-                        break;
+                    LogMessage("Send", command.CommandText, "Success");
+                    LogMessage("Receive", "応答受信", "Success", elapsed);
+                    statistics.IncrementSendSuccess();
+                    statistics.IncrementReceiveSuccess();
+                    statistics.UpdateResponseTime(elapsed);
                 }
-            }
-            finally
-            {
-                command.CompleteExecution();
-            }
+                else if (command.Mode == "NoCommand")
+                {
+                    LogMessage("Receive", "受信", "Success");
+                    statistics.IncrementReceiveSuccess();
+                }
+                else if (command.Mode == "NoResponse")
+                {
+                    LogMessage("Send", command.CommandText, "Success");
+                    statistics.IncrementSendSuccess();
+                }
 
-            if (command.Interval > 0)
-            {
-                await Task.Delay(command.Interval);
-            }
-        }
-
-        private async Task ExecuteNormalMode(Command command)
-        {
-            var sendTime = DateTime.Now;
-            await communicator.Send(command.CommandText);
-            LogMessage("Send", command.CommandText, "Success");
-            statistics.IncrementSendSuccess();
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(command.Timeout));
-            try
-            {
-                var response = await Task.Run(() => communicator.Receive(), cts.Token);
-                var responseTime = (DateTime.Now - sendTime).TotalMilliseconds;
-                LogMessage("Receive", response, "Success", responseTime);
-                statistics.IncrementReceiveSuccess();
-                statistics.UpdateResponseTime(responseTime);
-            }
-            catch (OperationCanceledException)
-            {
-                statistics.IncrementTimeout();
-                throw new TimeoutException($"応答待ちがタイムアウトしました（{command.Timeout}ms）");
-            }
-        }
-
-        private async Task ExecuteNoCommandMode(Command command)
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(command.Timeout));
-            try
-            {
-                var response = await Task.Run(() => communicator.Receive(), cts.Token);
-                LogMessage("Receive", response, "Success");
-                statistics.IncrementReceiveSuccess();
-            }
-            catch (OperationCanceledException)
-            {
-                statistics.IncrementTimeout();
-                throw new TimeoutException($"受信待ちがタイムアウトしました（{command.Timeout}ms）");
-            }
-        }
-
-        private async Task ExecuteNoResponseMode(Command command)
-        {
-            await communicator.Send(command.CommandText);
-            LogMessage("Send", command.CommandText, "Success");
-            statistics.IncrementSendSuccess();
+                // 単発コマンド実行完了時
+                if (!request.IsSequenceCommand)
+                {
+                    ExecuteButton.IsEnabled = true;
+                }
+                // シーケンスコマンド実行完了時で、シーケンス実行中なら次のコマンドを登録
+                else if (isSequenceRunning)
+                {
+                    var index = SequenceCommands.IndexOf(command);
+                    var nextIndex = (index + 1) % SequenceCommands.Count;
+                    executionManager.EnqueueCommand(SequenceCommands[nextIndex], true);
+                }
+            });
         }
 
         private void ConnectionTimer_Tick(object sender, EventArgs e)
         {
             statistics.UpdateConnectionTime();
-            OnPropertyChanged(nameof(Statistics));  // 統計情報の更新を通知
+            OnPropertyChanged(nameof(Statistics));
         }
 
         private void LogMessage(string type, string data, string result, double responseTime = 0)
@@ -329,7 +283,7 @@ namespace CommandTest
             }
         }
 
-        private async void StartSequenceButton_Click(object sender, RoutedEventArgs e)
+        private void StartSequenceButton_Click(object sender, RoutedEventArgs e)
         {
             if (!isConnected)
             {
@@ -364,32 +318,15 @@ namespace CommandTest
             try
             {
                 sequenceCts = new CancellationTokenSource();
-                await ExecuteSequence(sequenceCts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                LogMessage("Info", "シーケンスを停止しました", "Success");
+                if (SequenceCommands.Count > 0)
+                {
+                    executionManager.EnqueueCommand(SequenceCommands[0], true);
+                }
             }
             catch (Exception ex)
             {
                 LogError("Sequence", ex.Message);
                 MessageBox.Show($"シーケンス実行エラー: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                sequenceCts?.Dispose();
-                sequenceCts = null;
-                isSequenceRunning = false;
-                StartSequenceButton.IsEnabled = true;
-                AddCommandButton.IsEnabled = true;
-                RemoveCommandButton.IsEnabled = true;
-                MoveUpButton.IsEnabled = true;
-                MoveDownButton.IsEnabled = true;
-                SequenceCommandsDataGrid.IsEnabled = true;
-                ConnectButton.IsEnabled = true;
-
-                // 履歴・統計操作ボタンを有効化
-                EnableOperationButtons();
             }
         }
 
@@ -426,18 +363,18 @@ namespace CommandTest
         private void StopSequenceButton_Click(object sender, RoutedEventArgs e)
         {
             sequenceCts?.Cancel();
-        }
+            isSequenceRunning = false;
+            executionManager.StopExecution();
 
-        private async Task ExecuteSequence(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                foreach (var command in SequenceCommands)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await ExecuteCommand(command);
-                }
-            }
+            StartSequenceButton.IsEnabled = true;
+            AddCommandButton.IsEnabled = true;
+            RemoveCommandButton.IsEnabled = true;
+            MoveUpButton.IsEnabled = true;
+            MoveDownButton.IsEnabled = true;
+            SequenceCommandsDataGrid.IsEnabled = true;
+            ConnectButton.IsEnabled = true;
+
+            EnableOperationButtons();
         }
 
         private void ClearCommunicationLog_Click(object sender, RoutedEventArgs e)
@@ -527,6 +464,5 @@ namespace CommandTest
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
     }
 }
