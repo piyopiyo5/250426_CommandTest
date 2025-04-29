@@ -141,11 +141,15 @@ namespace CommandTest
                     yMin: 0,
                     yMax: counts.Max() * 1.2);
 
-                // 統計情報の表示
+                // 統計情報の表示（未加工のデータから計算）
+                var minStr = statistics.MinResponseTime.HasValue ? $"{statistics.MinResponseTime.Value:F1}" : "---";
+                var maxStr = statistics.MaxResponseTime.HasValue ? $"{statistics.MaxResponseTime.Value:F1}" : "---";
+                var avgStr = statistics.AverageResponseTime.HasValue ? $"{statistics.AverageResponseTime.Value:F1}" : "---";
+
                 var stats = $"データ数: {data.Count}\n" +
-                           $"最小値: {data.Min():F1} ms\n" +
-                           $"最大値: {data.Max():F1} ms\n" +
-                           $"平均値: {data.Average():F1} ms";
+                           $"最小値: {minStr} ms\n" +
+                           $"最大値: {maxStr} ms\n" +
+                           $"平均値: {avgStr} ms";
                 
                 PlotControl.Plot.AddAnnotation(stats, 0.98, 0.98);
                 PlotControl.Refresh();

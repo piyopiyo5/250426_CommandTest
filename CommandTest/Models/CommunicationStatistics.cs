@@ -12,7 +12,7 @@ namespace CommandTest.Models
         private int sendFailureCount;
         private int receiveSuccessCount;
         private int receiveFailureCount;
-        private double minResponseTime = double.MaxValue;
+        private double minResponseTime;
         private double maxResponseTime;
         private double averageResponseTime;
         private double currentResponseTime;
@@ -307,14 +307,26 @@ namespace CommandTest.Models
             if (responseTime < 0)
                 return;
 
-            CurrentResponseTime = responseTime;
-            MinResponseTime = hasResponseTimeData ? Math.Min(minResponseTime, responseTime) : responseTime;
-            MaxResponseTime = hasResponseTimeData ? Math.Max(maxResponseTime, responseTime) : responseTime;
+            if (!hasResponseTimeData)
+            {
+                // 最初のデータの場合
+                minResponseTime = responseTime;
+                maxResponseTime = responseTime;
+                totalResponseTime = responseTime;
+                responseCount = 1;
+                hasResponseTimeData = true;
+            }
+            else
+            {
+                // 2件目以降のデータ
+                minResponseTime = Math.Min(minResponseTime, responseTime);
+                maxResponseTime = Math.Max(maxResponseTime, responseTime);
+                totalResponseTime += responseTime;
+                responseCount++;
+            }
 
-            totalResponseTime += responseTime;
-            responseCount++;
+            CurrentResponseTime = responseTime;
             AverageResponseTime = totalResponseTime / responseCount;
-            hasResponseTimeData = true;
 
             responseTimeHistory.Add(responseTime);
         }
