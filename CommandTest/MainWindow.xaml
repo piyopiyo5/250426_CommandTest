@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:CommandTest.Models"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="コマンド送受信アプリ" Height="800" Width="1200">
+        Title="コマンド送受信アプリ" Height="1000" Width="1200">
 
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo/>
@@ -22,6 +22,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -146,33 +147,6 @@
                         </Grid>
                     </GroupBox>
 
-                    <!-- 送受信履歴 -->
-                    <GroupBox Grid.Row="1" Header="送受信履歴" Margin="5">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                        <DataGrid Grid.Row="0" x:Name="CommunicationLogDataGrid"
-                                  ItemsSource="{Binding CommunicationLogs}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Auto">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="タイムスタンプ" Binding="{Binding Timestamp, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Width="150"/>
-                                <DataGridTextColumn Header="種別" Binding="{Binding Type}" Width="80"/>
-                                <DataGridTextColumn Header="データ" Binding="{Binding Data}" Width="*"/>
-                                <DataGridTextColumn Header="結果" Binding="{Binding Result}" Width="*"/>
-                                <DataGridTextColumn Header="応答時間(ms)" Binding="{Binding ResponseTime, StringFormat=F1}" Width="100"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                                <Button Content="履歴クリア" Width="100" Margin="0,0,5,0" Click="ClearCommunicationLog_Click"/>
-                                <Button Content="CSVエクスポート" Width="120" Click="ExportCommunicationLog_Click"/>
-                            </StackPanel>
-                        </Grid>
-                    </GroupBox>
 
                 </Grid>
             </TabItem>
@@ -243,8 +217,36 @@
             </TabItem>
         </TabControl>
 
+        <!-- 送受信履歴 -->
+        <GroupBox Grid.Row="2" Header="送受信履歴" Margin="5">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DataGrid Grid.Row="0" x:Name="CommunicationLogDataGrid"
+                          ItemsSource="{Binding CommunicationLogs}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="タイムスタンプ" Binding="{Binding Timestamp, StringFormat=yyyy/MM/dd HH:mm:ss.fff}" Width="150"/>
+                        <DataGridTextColumn Header="種別" Binding="{Binding Type}" Width="80"/>
+                        <DataGridTextColumn Header="データ" Binding="{Binding Data}" Width="*"/>
+                        <DataGridTextColumn Header="結果" Binding="{Binding Result}" Width="*"/>
+                        <DataGridTextColumn Header="応答時間(ms)" Binding="{Binding ResponseTime, StringFormat=F1}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                    <Button Content="履歴クリア" Width="100" Margin="0,0,5,0" Click="ClearCommunicationLog_Click"/>
+                    <Button Content="CSVエクスポート" Width="120" Click="ExportCommunicationLog_Click"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
         <!-- 統計情報部 -->
-        <GroupBox Grid.Row="2" Header="統計情報" x:Name="StatisticsGroupBox">
+        <GroupBox Grid.Row="3" Header="統計情報" x:Name="StatisticsGroupBox">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
