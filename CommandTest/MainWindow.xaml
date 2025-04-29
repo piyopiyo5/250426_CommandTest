@@ -306,22 +306,22 @@
                     <StackPanel>
                         <TextBlock>
                             <Run Text="最小: "/>
-                            <Run Text="{Binding Statistics.MinResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="{Binding Statistics.MinResponseTime, StringFormat=F1, Mode=OneWay, TargetNullValue='---'}"/>
                             <Run Text="ms"/>
                         </TextBlock>
                         <TextBlock>
                             <Run Text="最大: "/>
-                            <Run Text="{Binding Statistics.MaxResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="{Binding Statistics.MaxResponseTime, StringFormat=F1, Mode=OneWay, TargetNullValue='---'}"/>
                             <Run Text="ms"/>
                         </TextBlock>
                         <TextBlock>
                             <Run Text="平均: "/>
-                            <Run Text="{Binding Statistics.AverageResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="{Binding Statistics.AverageResponseTime, StringFormat=F1, Mode=OneWay, TargetNullValue='---'}"/>
                             <Run Text="ms"/>
                         </TextBlock>
                         <TextBlock>
                             <Run Text="現在: "/>
-                            <Run Text="{Binding Statistics.CurrentResponseTime, StringFormat=F1, Mode=OneWay}"/>
+                            <Run Text="{Binding Statistics.CurrentResponseTime, StringFormat=F1, Mode=OneWay, TargetNullValue='---'}"/>
                             <Run Text="ms"/>
                         </TextBlock>
                     </StackPanel>

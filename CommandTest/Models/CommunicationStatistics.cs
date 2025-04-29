@@ -18,6 +18,7 @@ namespace CommandTest.Models
         private double currentResponseTime;
         private int timeoutCount;
         private int errorCount;
+        private bool hasResponseTimeData;
 
         public TimeSpan CurrentConnectionTime
         {
@@ -110,53 +111,97 @@ namespace CommandTest.Models
             }
         }
 
-        public double MinResponseTime
+        public double? MinResponseTime
         {
-            get => minResponseTime;
+            get => hasResponseTimeData ? minResponseTime : null;
             private set
             {
-                if (minResponseTime != value)
+                if (!value.HasValue)
                 {
-                    minResponseTime = value;
+                    if (hasResponseTimeData)
+                    {
+                        hasResponseTimeData = false;
+                        OnPropertyChanged(nameof(MinResponseTime));
+                    }
+                    return;
+                }
+
+                if (!hasResponseTimeData || minResponseTime != value.Value)
+                {
+                    minResponseTime = value.Value;
+                    hasResponseTimeData = true;
                     OnPropertyChanged(nameof(MinResponseTime));
                 }
             }
         }
 
-        public double MaxResponseTime
+        public double? MaxResponseTime
         {
-            get => maxResponseTime;
+            get => hasResponseTimeData ? maxResponseTime : null;
             private set
             {
-                if (maxResponseTime != value)
+                if (!value.HasValue)
                 {
-                    maxResponseTime = value;
+                    if (hasResponseTimeData)
+                    {
+                        hasResponseTimeData = false;
+                        OnPropertyChanged(nameof(MaxResponseTime));
+                    }
+                    return;
+                }
+
+                if (!hasResponseTimeData || maxResponseTime != value.Value)
+                {
+                    maxResponseTime = value.Value;
+                    hasResponseTimeData = true;
                     OnPropertyChanged(nameof(MaxResponseTime));
                 }
             }
         }
 
-        public double AverageResponseTime
+        public double? AverageResponseTime
         {
-            get => averageResponseTime;
+            get => hasResponseTimeData ? averageResponseTime : null;
             private set
             {
-                if (averageResponseTime != value)
+                if (!value.HasValue)
                 {
-                    averageResponseTime = value;
+                    if (hasResponseTimeData)
+                    {
+                        hasResponseTimeData = false;
+                        OnPropertyChanged(nameof(AverageResponseTime));
+                    }
+                    return;
+                }
+
+                if (!hasResponseTimeData || averageResponseTime != value.Value)
+                {
+                    averageResponseTime = value.Value;
+                    hasResponseTimeData = true;
                     OnPropertyChanged(nameof(AverageResponseTime));
                 }
             }
         }
 
-        public double CurrentResponseTime
+        public double? CurrentResponseTime
         {
-            get => currentResponseTime;
+            get => hasResponseTimeData ? currentResponseTime : null;
             private set
             {
-                if (currentResponseTime != value)
+                if (!value.HasValue)
                 {
-                    currentResponseTime = value;
+                    if (hasResponseTimeData)
+                    {
+                        hasResponseTimeData = false;
+                        OnPropertyChanged(nameof(CurrentResponseTime));
+                    }
+                    return;
+                }
+
+                if (!hasResponseTimeData || currentResponseTime != value.Value)
+                {
+                    currentResponseTime = value.Value;
+                    hasResponseTimeData = true;
                     OnPropertyChanged(nameof(CurrentResponseTime));
                 }
             }
@@ -201,10 +246,11 @@ namespace CommandTest.Models
             SendFailureCount = 0;
             ReceiveSuccessCount = 0;
             ReceiveFailureCount = 0;
-            MinResponseTime = double.MaxValue;
-            MaxResponseTime = 0;
-            AverageResponseTime = 0;
-            CurrentResponseTime = 0;
+            MinResponseTime = null;
+            MaxResponseTime = null;
+            AverageResponseTime = null;
+            CurrentResponseTime = null;
+            hasResponseTimeData = false;
             TimeoutCount = 0;
             ErrorCount = 0;
             connectionStartTime = null;
@@ -258,12 +304,13 @@ namespace CommandTest.Models
                 return;
 
             CurrentResponseTime = responseTime;
-            MinResponseTime = Math.Min(MinResponseTime, responseTime);
-            MaxResponseTime = Math.Max(MaxResponseTime, responseTime);
+            MinResponseTime = hasResponseTimeData ? Math.Min(minResponseTime, responseTime) : responseTime;
+            MaxResponseTime = hasResponseTimeData ? Math.Max(maxResponseTime, responseTime) : responseTime;
 
             totalResponseTime += responseTime;
             responseCount++;
             AverageResponseTime = totalResponseTime / responseCount;
+            hasResponseTimeData = true;
         }
 
         public string ToCsv()
@@ -271,7 +318,10 @@ namespace CommandTest.Models
             return $"{CurrentConnectionTime.TotalSeconds:F3},{TotalConnectionTime.TotalSeconds:F3}," +
                    $"{ConnectionCount},{SendSuccessCount},{SendFailureCount}," +
                    $"{ReceiveSuccessCount},{ReceiveFailureCount}," +
-                   $"{MinResponseTime:F3},{MaxResponseTime:F3},{AverageResponseTime:F3},{CurrentResponseTime:F3}," +
+                   $"{(MinResponseTime?.ToString("F3") ?? "---")}," +
+                   $"{(MaxResponseTime?.ToString("F3") ?? "---")}," +
+                   $"{(AverageResponseTime?.ToString("F3") ?? "---")}," +
+                   $"{(CurrentResponseTime?.ToString("F3") ?? "---")}," +
                    $"{TimeoutCount},{ErrorCount}";
         }
 
