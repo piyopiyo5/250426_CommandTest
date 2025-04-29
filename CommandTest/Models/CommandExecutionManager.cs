@@ -152,13 +152,15 @@ namespace CommandTest.Models
         {
             await communicator.Send(command.CommandText);
             using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(command.Timeout));
-            await Task.Run(() => communicator.Receive(), cts.Token);
+            var receivedData = await Task.Run(() => communicator.Receive(), cts.Token);
+            currentRequest!.ReceivedData = receivedData;
         }
 
         private async Task ExecuteNoCommandMode(Command command)
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(command.Timeout));
-            await Task.Run(() => communicator.Receive(), cts.Token);
+            var receivedData = await Task.Run(() => communicator.Receive(), cts.Token);
+            currentRequest!.ReceivedData = receivedData;
         }
 
         private async Task ExecuteNoResponseMode(Command command)

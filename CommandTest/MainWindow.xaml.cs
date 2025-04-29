@@ -169,14 +169,14 @@ namespace CommandTest
                 if (command.Mode == "Normal")
                 {
                     LogMessage("Send", command.CommandText, "Success");
-                    LogMessage("Receive", "応答受信", "Success", elapsed);
+                    LogMessage("Receive", request.ReceivedData ?? string.Empty, "Success", elapsed);
                     statistics.IncrementSendSuccess();
                     statistics.IncrementReceiveSuccess();
                     statistics.UpdateResponseTime(elapsed);
                 }
                 else if (command.Mode == "NoCommand")
                 {
-                    LogMessage("Receive", "受信", "Success");
+                    LogMessage("Receive", request.ReceivedData ?? string.Empty, "Success");
                     statistics.IncrementReceiveSuccess();
                 }
                 else if (command.Mode == "NoResponse")

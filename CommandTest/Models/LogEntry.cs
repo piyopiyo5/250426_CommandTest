@@ -20,6 +20,10 @@ namespace CommandTest.Models
             }
             
             var responseTimeStr = ResponseTime > 0 ? $" ({ResponseTime:F1}ms)" : "";
+            if (Type == "Receive")
+            {
+                return $"{Timestamp:yyyy/MM/dd HH:mm:ss.fff} [{Type}]{responseTimeStr} {Result}";
+            }
             return $"{Timestamp:yyyy/MM/dd HH:mm:ss.fff} [{Type}]{responseTimeStr} {Data} => {Result}";
         }
 

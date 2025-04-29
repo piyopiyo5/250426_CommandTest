@@ -38,6 +38,11 @@ namespace CommandTest.Models
         public bool IsComplete => ExecutionEndTime.HasValue;
 
         /// <summary>
+        /// 受信したデータ
+        /// </summary>
+        public string? ReceivedData { get; set; }
+
+        /// <summary>
         /// コマンド実行要求を作成します
         /// </summary>
         /// <param name="command">実行するコマンド</param>
