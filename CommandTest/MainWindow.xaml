@@ -344,6 +344,7 @@
             
                 <!-- 統計情報操作ボタン -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,5,0">
+                    <Button Content="グラフ表示" Width="100" Margin="0,0,5,0" Click="ShowDistributionGraph_Click"/>
                     <Button Content="統計情報クリア" Width="100" Margin="0,0,5,0" Click="ClearStatistics_Click"/>
                     <Button Content="CSVエクスポート" Width="120" Click="ExportStatistics_Click"/>
                 </StackPanel>

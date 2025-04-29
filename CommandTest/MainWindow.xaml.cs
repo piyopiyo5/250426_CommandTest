@@ -514,6 +514,13 @@ namespace CommandTest
             }
         }
 
+        private void ShowDistributionGraph_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new ResponseTimeDistributionWindow(statistics);
+            window.Owner = this;
+            window.Show();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)

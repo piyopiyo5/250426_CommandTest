@@ -236,6 +236,9 @@ namespace CommandTest.Models
         private DateTime? connectionStartTime;
         private double totalResponseTime;
         private int responseCount;
+        private readonly List<double> responseTimeHistory = new();
+
+        public IReadOnlyList<double> GetResponseTimeHistory() => responseTimeHistory.AsReadOnly();
 
         public void Reset()
         {
@@ -256,6 +259,7 @@ namespace CommandTest.Models
             connectionStartTime = null;
             totalResponseTime = 0;
             responseCount = 0;
+            responseTimeHistory.Clear();
             OnPropertyChanged(nameof(ConnectionCount));
         }
 
@@ -311,6 +315,8 @@ namespace CommandTest.Models
             responseCount++;
             AverageResponseTime = totalResponseTime / responseCount;
             hasResponseTimeData = true;
+
+            responseTimeHistory.Add(responseTime);
         }
 
         public string ToCsv()
