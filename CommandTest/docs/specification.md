@@ -3,17 +3,104 @@
 ## 1. システム概要
 
 本アプリケーションは、様々な通信方式を使用してコマンドの送受信を行うWindowsアプリケーションです。
-主にTCP通信を使用し、将来的にRS232C通信にも対応予定です。
+現在はTCP通信を実装済みで、将来的にRS232C通信にも対応予定です。
 
-## 2. 主要機能
+## 2. 実装状態
 
-### 2.1 通信機能
+### 2.1 ファイル構成
+```
+CommandTest/
+├── App.xaml                     # アプリケーションのエントリーポイント
+├── App.xaml.cs
+├── AssemblyInfo.cs             # アセンブリ情報
+├── MainWindow.xaml             # メインウィンドウのUI定義
+├── MainWindow.xaml.cs          # メインウィンドウのロジック
+├── Communications/             # 通信関連
+│   ├── ICommunicator.cs       # 通信インターフェース
+│   └── TcpCommunicator.cs     # TCP通信の実装
+├── Models/                     # モデルクラス
+│   ├── Command.cs             # コマンド情報
+│   ├── CommandModeConverter.cs    # コマンドモード変換
+│   ├── CommunicationSettings.cs   # 通信設定
+│   ├── CommunicationStatistics.cs # 統計情報
+│   ├── DelimiterTypeConverter.cs  # デリミタ変換
+│   └── LogEntry.cs                # ログエントリ
+└── docs/                      # ドキュメント
+    └── specification.md       # 仕様書
+```
 
-#### 2.1.1 通信方式
+### 2.2 実装済み機能
+
+#### 2.2.1 通信機能
+- TCP通信（クライアントモード）
+  - 接続/切断制御
+  - 非同期通信処理
+  - デリミタ処理（CR/LF/CRLF）
+  - エラー処理
+
+#### 2.2.2 送受信モード
+- 通常モード
+  - コマンド送信後のレスポンス待ち受け
+  - タイムアウト制御
+  - 応答時間計測（1ms精度）
+- コマンドなしモード（受信のみ）
+  - データ受信処理
+  - タイムアウト制御
+- レスポンスなしモード（送信のみ）
+  - データ送信処理
+
+#### 2.2.3 実行機能
+1. 単発送受信
+   - コマンドテキスト入力
+   - 送受信モード選択
+   - タイムアウト時間設定
+   - 待ち時間設定
+   - 実行制御
+
+2. 繰り返し送受信
+   - コマンドリスト管理（追加/削除/順序変更）
+   - コマンド個別設定
+     - コマンドテキスト
+     - 送受信モード
+     - タイムアウト時間
+     - 待ち時間
+   - シーケンス制御（開始/停止）
+
+#### 2.2.4 ログ・統計機能
+1. 送受信履歴
+   - タイムスタンプ（ミリ秒精度）
+   - 送信/受信の区分
+   - データ内容
+   - 実行結果
+   - 応答時間（通常モード時）
+   - CSV形式エクスポート
+   - 履歴クリア
+
+2. 統計情報
+   - 接続情報
+     - 現在の接続時間（リアルタイム更新）
+     - 累計接続時間
+     - 接続回数
+   - 送受信カウンター
+     - 送信成功/失敗数
+     - 受信成功/失敗数
+   - 応答時間統計
+     - 最小/最大/平均/現在の応答時間（1ms精度）
+   - エラーカウンター
+     - タイムアウト発生数
+     - その他エラー発生数
+   - CSV形式エクスポート
+   - 統計クリア
+
+## 3. 主要機能
+
+### 3.1 通信機能
+
+#### 3.1.1 通信方式
 - TCP通信（クライアントモード）
 - RS232C通信（将来拡張）
 
-#### 2.1.2 送受信モード
+#### 3.1.2 送受信モード
 1. 通常モード
    - コマンド送信後、レスポンスを待ち受けて受信
    - タイムアウト時間を設定可能
@@ -27,23 +114,23 @@
    - 送信のみを行うモード
    - レスポンスを待たずに次の処理へ
 
-### 2.2 送受信方式
+### 3.2 送受信方式
 
-#### 2.2.1 単発送受信
+#### 3.2.1 単発送受信
 - 1つのコマンドを送信し、レスポンスを受信
 - レスポンスなしモード時は送信のみ
 - コマンドなしモード時は受信のみ
 
-#### 2.2.2 繰り返し送受信
+#### 3.2.2 繰り返し送受信
 - 複数のコマンドを順次実行
 - 各モードでの動作：
   1. 通常モード：レスポンス受信後、待ち時間経過後に次コマンド送信
   2. レスポンスなしモード：コマンド送信後、待ち時間経過後に次コマンド送信
   3. コマンドなしモード：継続的に受信データを監視
 
-### 2.3 設定項目
+### 3.3 設定項目
 
-#### 2.3.1 設定部
+#### 3.3.1 設定部
 1. 通信設定
    - TCP設定
      - IPアドレス
@@ -53,7 +140,7 @@
 2. コマンド設定
    - デリミタ設定（CR/LF/CRLF）
 
-#### 2.3.2 コマンド実行部
+#### 3.3.2 コマンド実行部
 1. 単発送受信タブ
    - コマンド入力欄
    - タイムアウト時間設定
@@ -71,7 +158,7 @@
    - 開始/停止ボタン
    - 実行順序の変更機能
 
-#### 2.3.3 送受信制御
+#### 3.3.3 送受信制御
 1. タイミング制御
    - タイムアウト時間：コマンドごとに個別設定
    - 待ち時間：コマンドごとに個別設定
@@ -81,7 +168,7 @@
      - 繰り返しサイクル完了後に実行
      - 単発コマンドの待ち時間経過後に繰り返し再開
 
-### 2.4 ログ・統計機能
+### 3.4 ログ・統計機能
 1. 送受信履歴の記録
    - タイムスタンプ
    - 送信/受信の区分
@@ -117,9 +204,9 @@
    - エラー履歴のエクスポート
    - 統計情報のエクスポート
 
-## 3. システム設計
+## 4. システム設計
 
-### 3.1 クラス設計
+### 4.1 クラス設計
 
 ```mermaid
 classDiagram
@@ -128,11 +215,10 @@ classDiagram
         -List<Command> sequenceCommands
         -Command singleCommand
         -List<LogEntry> communicationLogs
-        -List<LogEntry> errorLogs
         -CommunicationStatistics statistics
         -CommunicationSettings settings
         -bool isSequenceRunning
-        -DateTime connectionStartTime
+        -string connectionState
         +Initialize()
         +Connect()
         +Disconnect()
@@ -140,13 +226,12 @@ classDiagram
         +StartSequence()
         +StopSequence()
         +ExportCommunicationLog()
-        +ExportErrorLog()
         +ExportStatistics()
         +UpdateStatistics()
         -HandleSequenceComplete()
         -ExecuteNextCommand()
-        -LogError(string message)
-        -UpdateResponseTime(double responseTime)
+        -LogMessage()
+        -LogError()
     }
 
     class Command {
@@ -165,22 +250,22 @@ classDiagram
 
     class ICommunicator {
         <<interface>>
-        +Connect()
-        +Disconnect()
-        +Send(data: string)
-        +Receive() string
-        +IsConnected bool
+        +bool IsConnected
+        +Task Connect()
+        +Task Disconnect()
+        +Task Send(data: string)
+        +Task<string> Receive()
     }
 
     class TcpCommunicator {
-        -TcpClient client
-        -NetworkStream stream
+        -TcpClient? client
+        -NetworkStream? stream
         -CommunicationSettings settings
-        +Connect()
-        +Disconnect()
-        +Send(data: string)
-        +Receive() string
-        -ProcessDelimiter(string data)
+        +bool IsConnected
+        +Task Connect()
+        +Task Disconnect()
+        +Task Send(data: string)
+        +Task<string> Receive()
     }
 
     class LogEntry {
@@ -191,6 +276,8 @@ classDiagram
         +string ErrorType
         +string Location
         +double ResponseTime
+        +string ToCsv()
+        +static string CsvHeader
     }
 
     class CommunicationSettings {
@@ -215,62 +302,93 @@ classDiagram
         +int ErrorCount
         +void Reset()
         +void UpdateConnectionTime()
+        +void StartConnection()
+        +void EndConnection()
         +void IncrementCounters()
-        +void UpdateResponseTime(double responseTime)
+        +void UpdateResponseTime()
+        +string ToCsv()
+        +static string CsvHeader
+    }
+
+    class CommandModeConverter {
+        +object Convert()
+        +object ConvertBack()
+    }
+
+    class DelimiterTypeConverter {
+        +object Convert()
+        +object ConvertBack()
     }
 
     MainWindow --> ICommunicator
+    MainWindow --> Command
     MainWindow --> CommunicationSettings
-    MainWindow *-- Command
     MainWindow --> CommunicationStatistics
+    MainWindow --> LogEntry
+    TcpCommunicator ..|> ICommunicator
     TcpCommunicator --> CommunicationSettings
 ```
 
-### 3.2 クラス説明
+### 4.2 クラス説明
 
-#### 3.2.1 MainWindow
+#### 4.2.1 MainWindow
 - アプリケーションのメインウィンドウを管理
-- 通信制御とログ管理を直接実装
+- 通信制御とログ管理を実装
 - 単発/繰り返し送受信の制御
 - タブ切り替えの管理
 - UIイベントの処理
 - エラー処理と記録
 - 応答時間の計測と統計処理
 
-#### 3.2.2 Command
+#### 4.2.2 Command
 - コマンド情報の管理
 - タイムアウトと待ち時間の個別設定
 - 実行状態の管理
-- 最終実行時刻の記録
 - 応答時間の計測
 
-#### 3.2.3 ICommunicator
+#### 4.2.3 ICommunicator
 - 通信機能のインターフェース
 - 将来的なRS232C対応のための抽象化
 - 基本的な通信操作を定義
 
-#### 3.2.4 TcpCommunicator
+#### 4.2.4 TcpCommunicator
 - TCP通信の実装
 - 非同期通信処理
 - デリミタ処理の実装
-- 通信状態の管理
+- 接続状態の管理
 
-#### 3.2.5 LogEntry
+#### 4.2.5 LogEntry
 - 送受信/エラーログのデータ構造
 - タイムスタンプ管理
 - 通信結果の記録
 - エラー情報の記録
 - 応答時間の記録
+- CSV形式エクスポート
 
-#### 3.2.6 CommunicationSettings
+#### 4.2.6 CommunicationSettings
 - TCP通信パラメータの管理
 - デリミタ設定の管理
 
-## 4. 画面設計
+#### 4.2.7 CommunicationStatistics
+- 通信統計情報の管理
+- 接続時間の計測
+- 送受信カウンターの管理
+- 応答時間の統計処理
+- CSV形式エクスポート
 
-### 4.1 メイン画面レイアウト
+#### 4.2.8 CommandModeConverter
+- 送受信モードの表示変換
+- 日本語表示とコード値の相互変換
 
-#### 4.1.1 設定部
+#### 4.2.9 DelimiterTypeConverter
+- デリミタ設定の表示変換
+- 表示用文字列とコード値の相互変換
+
+## 5. 画面設計
+
+### 5.1 メイン画面レイアウト
+
+#### 5.1.1 設定部
 1. 通信設定部
    - 通信方式選択コンボボックス
    - IPアドレス入力欄
@@ -281,7 +399,7 @@ classDiagram
 2. コマンド設定部
    - デリミタ選択（CR/LF/CRLF）
 
-#### 4.1.2 コマンド実行部
+#### 5.1.2 コマンド実行部
 1. タブコントロール
    - 単発送受信タブ
      - コマンド入力欄
@@ -296,7 +414,7 @@ classDiagram
      - コマンド順序変更ボタン
      - 開始/停止ボタン
 
-#### 4.1.3 ログ・統計表示部
+#### 5.1.3 ログ・統計表示部
 1. 統計情報エリア
    - 接続状態表示
      - 現在の接続時間
@@ -323,43 +441,37 @@ classDiagram
      - 応答時間列（1ms精度、通常モードのみ）
      - 結果列
    - CSVエクスポートボタン
+   - 履歴クリアボタン
 
-3. エラー履歴エリア
-   - エラー履歴グリッド表示
-     - タイムスタンプ列
-     - エラー種別列
-     - エラー内容列
-     - エラー発生箇所列
-   - CSVエクスポートボタン
+## 6. エラー処理
 
-## 5. エラー処理
-
-### 5.1 通信エラー
+### 6.1 通信エラー
 - 接続失敗
 - 切断検知
 - タイムアウト
 - データ送信失敗
 - データ受信失敗
 
-### 5.2 ユーザー入力エラー
+### 6.2 ユーザー入力エラー
 - 無効な接続パラメータ
 - 無効なコマンド形式
 - 無効な設定値
 
-## 6. 将来的な拡張性
+## 7. 将来的な拡張性
 
-### 6.1 通信方式の追加
+### 7.1 通信方式の追加
 - RS232C通信の実装
 - その他の通信プロトコルへの対応
 
-### 6.2 機能拡張
+### 7.2 機能拡張
 - コマンドテンプレート機能
 - マクロ機能
 - スクリプト実行機能
 - 通信データの解析機能
 
-## 7. 開発環境
+## 8. 開発環境
 - 開発言語：C#
-- フレームワーク：WPF
-- 開発ツール：Visual Studio
+- フレームワーク：.NET 8.0
+- UIフレームワーク：WPF
+- 開発ツール：Visual Studio 2022
 - 対象OS：Windows 10/11
