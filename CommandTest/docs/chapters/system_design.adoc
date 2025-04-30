@@ -1,0 +1,194 @@
+== システム設計
+
+=== クラス設計
+
+[plantuml]
+....
+@startuml
+skinparam monochrome true
+skinparam defaultFontName MS Gothic
+
+class MainWindow {
+    -ICommunicator communicator
+    -List<Command> sequenceCommands
+    -Command singleCommand
+    -List<LogEntry> communicationLogs
+    -CommunicationStatistics statistics
+    -CommunicationSettings settings
+    -CommandExecutionManager executionManager
+    -bool isSequenceRunning
+    -string connectionState
+    +Initialize()
+    +Connect()
+    +Disconnect()
+    +ExecuteSingleCommand(Command cmd)
+    +StartSequence()
+    +StopSequence()
+    +ExportCommunicationLog()
+    +ExportStatistics()
+    +UpdateStatistics()
+    -HandleSequenceComplete()
+    -ExecuteNextCommand()
+    -LogMessage()
+    -LogError()
+}
+
+class Command {
+    +string CommandText
+    +string Mode
+    +int Timeout
+    +int Interval
+    +bool IsExecuting
+    +DateTime LastExecutionTime
+    +DateTime SendTime
+    +double ResponseTime
+    +void StartExecution()
+    +void CompleteExecution()
+    +double CalculateResponseTime()
+}
+
+interface ICommunicator {
+    +bool IsConnected
+    +Task Connect()
+    +Task Disconnect()
+    +Task Send(data: string)
+    +Task<string> Receive()
+}
+
+class TcpCommunicator {
+    -TcpClient? client
+    -NetworkStream? stream
+    -CommunicationSettings settings
+    +bool IsConnected
+    +Task Connect()
+    +Task Disconnect()
+    +Task Send(data: string)
+    +Task<string> Receive()
+}
+
+class LogEntry {
+    +DateTime Timestamp
+    +string Type
+    +string Data
+    +string Result
+    +string ErrorType
+    +string Location
+    +double ResponseTime
+    +string ToCsv()
+    +{static} string CsvHeader
+}
+
+class CommunicationSettings {
+    +string IpAddress
+    +int Port
+    +string Delimiter
+}
+
+class CommunicationStatistics {
+    +TimeSpan CurrentConnectionTime
+    +TimeSpan TotalConnectionTime
+    +int ConnectionCount
+    +int SendSuccessCount
+    +int SendFailureCount
+    +int ReceiveSuccessCount
+    +int ReceiveFailureCount
+    +double MinResponseTime
+    +double MaxResponseTime
+    +double AverageResponseTime
+    +double CurrentResponseTime
+    +int TimeoutCount
+    +int ErrorCount
+    +void Reset()
+    +void UpdateConnectionTime()
+    +void StartConnection()
+    +void EndConnection()
+    +void IncrementCounters()
+    +void UpdateResponseTime()
+    +string ToCsv()
+    +{static} string CsvHeader
+}
+
+class CommandModeConverter {
+    +object Convert()
+    +object ConvertBack()
+}
+
+class DelimiterTypeConverter {
+    +object Convert()
+    +object ConvertBack()
+}
+
+class CommandExecutionManager {
+    -DateTime lastExecutionTime
+    -int lastWaitTime
+    +bool CanExecuteCommand(Command command)
+    +void NotifyCommandExecution(Command command)
+    +double GetElapsedTime()
+}
+
+MainWindow o-- ICommunicator
+MainWindow o-- Command
+MainWindow o-- CommunicationSettings
+MainWindow o-- CommunicationStatistics
+MainWindow o-- LogEntry
+MainWindow o-- CommandExecutionManager
+TcpCommunicator ..|> ICommunicator
+TcpCommunicator o-- CommunicationSettings
+
+@enduml
+....
+
+=== クラス説明
+
+==== MainWindow
+* アプリケーションのメインウィンドウを管理
+* 通信制御とログ管理を実装
+* 単発/繰り返し送受信の制御
+* タブ切り替えの管理
+* UIイベントの処理
+* エラー処理と記録
+* 応答時間の計測と統計処理
+
+==== Command
+* コマンド情報の管理
+* タイムアウトと待ち時間の個別設定
+* 実行状態の管理
+* 応答時間の計測
+
+==== ICommunicator
+* 通信機能のインターフェース
+* 将来的なRS232C対応のための抽象化
+* 基本的な通信操作を定義
+
+==== TcpCommunicator
+* TCP通信の実装
+* 非同期通信処理
+* デリミタ処理の実装
+* 接続状態の管理
+
+==== LogEntry
+* 送受信/エラーログのデータ構造
+* タイムスタンプ管理
+* 通信結果の記録
+* エラー情報の記録
+* 応答時間の記録
+* CSV形式エクスポート
+
+==== CommunicationSettings
+* TCP通信パラメータの管理
+* デリミタ設定の管理
+
+==== CommunicationStatistics
+* 通信統計情報の管理
+* 接続時間の計測
+* 送受信カウンターの管理
+* 応答時間の統計処理
+* CSV形式エクスポート
+
+==== CommandModeConverter
+* 送受信モードの表示変換
+* 日本語表示とコード値の相互変換
+
+==== DelimiterTypeConverter
+* デリミタ設定の表示変換
+* 表示用文字列とコード値の相互変換
