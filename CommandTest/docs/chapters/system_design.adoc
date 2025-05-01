@@ -1,194 +1,154 @@
 == システム設計
 
-=== クラス設計
+=== 全体構成
+
+アプリケーションは以下の3つの主要コンポーネントで構成されます：
+
+* Models - ビジネスロジックとデータモデル
+* Views - 画面のUI定義とコードビハインド
+* Communications - 通信機能の実装
 
 [plantuml]
 ....
-@startuml
-skinparam monochrome true
-skinparam defaultFontName MS Gothic
+package "CommandTest" {
+    package "Models" {
+        [Command]
+        [CommandQueue]
+        [CommunicationSettings]
+        [CommunicationStatistics]
+        [AsciiControlCharacter]
+    }
 
-class MainWindow {
-    -ICommunicator communicator
-    -List<Command> sequenceCommands
-    -Command singleCommand
-    -List<LogEntry> communicationLogs
-    -CommunicationStatistics statistics
-    -CommunicationSettings settings
-    -CommandExecutionManager executionManager
-    -bool isSequenceRunning
-    -string connectionState
-    +Initialize()
-    +Connect()
-    +Disconnect()
-    +ExecuteSingleCommand(Command cmd)
-    +StartSequence()
-    +StopSequence()
-    +ExportCommunicationLog()
-    +ExportStatistics()
-    +UpdateStatistics()
-    -HandleSequenceComplete()
-    -ExecuteNextCommand()
-    -LogMessage()
-    -LogError()
+    package "Views" {
+        [MainWindow]
+        [CommandEditWindow]
+        [AsciiControlCharacterWindow]
+        [ResponseTimeDistributionWindow]
+    }
+
+    package "Communications" {
+        interface "ICommunicator"
+        [TcpCommunicator]
+        [CommandExecutionManager]
+    }
+
+    [MainWindow] --> [Command]
+    [MainWindow] --> [CommunicationSettings]
+    [MainWindow] --> [CommandExecutionManager]
+    [CommandEditWindow] --> [Command]
+    [AsciiControlCharacterWindow] --> [AsciiControlCharacter]
+    [CommandExecutionManager] --> [ICommunicator]
+    [TcpCommunicator] ..|> [ICommunicator]
 }
+....
 
+=== 各コンポーネントの役割
+
+==== Models
+* Command - コマンドのデータモデル
+* CommandQueue - コマンドの実行キュー
+* CommunicationSettings - 通信設定の管理
+* CommunicationStatistics - 通信統計の管理
+* AsciiControlCharacter - ASCII制御文字の管理（静的クラス）
+
+==== Views
+* MainWindow - メインウィンドウのUI/コードビハインド
+* CommandEditWindow - コマンド編集画面のUI/コードビハインド
+* AsciiControlCharacterWindow - ASCII制御文字選択画面のUI/コードビハインド
+* ResponseTimeDistributionWindow - 応答時間グラフ画面のUI/コードビハインド
+
+==== Communications
+* ICommunicator - 通信インターフェース
+* TcpCommunicator - TCP/IP通信の実装
+* CommandExecutionManager - コマンド実行の管理
+
+=== データの流れ
+
+[plantuml]
+....
+actor User
+participant "MainWindow" as Main
+participant "CommandEditWindow" as Edit
+participant "AsciiControlCharacterWindow" as ASCII
+participant "CommandExecutionManager" as Exec
+participant "TcpCommunicator" as TCP
+
+User -> Main : コマンド編集
+Main -> Edit : 編集ウィンドウを表示
+Edit -> ASCII : 制御文字選択
+ASCII --> Edit : 選択結果を返却
+Edit --> Main : 編集結果を返却
+Main -> Exec : コマンド実行
+Exec -> TCP : 送信要求
+TCP --> Exec : 受信データ
+Exec --> Main : 実行結果
+Main --> User : 結果表示
+....
+
+=== データモデル
+
+[plantuml]
+....
 class Command {
-    +string CommandText
-    +string Mode
-    +int Timeout
-    +int Interval
-    +bool IsExecuting
-    +DateTime LastExecutionTime
-    +DateTime SendTime
-    +double ResponseTime
-    +void StartExecution()
-    +void CompleteExecution()
-    +double CalculateResponseTime()
+    +CommandText: string
+    +Mode: string
+    +Timeout: int
+    +Interval: int
+    +Clone(): Command
 }
 
-interface ICommunicator {
-    +bool IsConnected
-    +Task Connect()
-    +Task Disconnect()
-    +Task Send(data: string)
-    +Task<string> Receive()
-}
-
-class TcpCommunicator {
-    -TcpClient? client
-    -NetworkStream? stream
-    -CommunicationSettings settings
-    +bool IsConnected
-    +Task Connect()
-    +Task Disconnect()
-    +Task Send(data: string)
-    +Task<string> Receive()
+class CommandRequest {
+    +Command: Command
+    +IsSequenceCommand: bool
+    +ExecutionStartTime: DateTime
+    +ExecutionEndTime: DateTime?
+    +ReceivedData: string
 }
 
 class LogEntry {
-    +DateTime Timestamp
-    +string Type
-    +string Data
-    +string Result
-    +string ErrorType
-    +string Location
-    +double ResponseTime
-    +string ToCsv()
-    +{static} string CsvHeader
+    +Timestamp: DateTime
+    +Type: string
+    +Data: string
+    +Result: string
+    +ResponseTime: double
 }
 
 class CommunicationSettings {
-    +string IpAddress
-    +int Port
-    +string Delimiter
+    +IpAddress: string
+    +Port: int
+    +Delimiter: string
 }
 
 class CommunicationStatistics {
-    +TimeSpan CurrentConnectionTime
-    +TimeSpan TotalConnectionTime
-    +int ConnectionCount
-    +int SendSuccessCount
-    +int SendFailureCount
-    +int ReceiveSuccessCount
-    +int ReceiveFailureCount
-    +double MinResponseTime
-    +double MaxResponseTime
-    +double AverageResponseTime
-    +double CurrentResponseTime
-    +int TimeoutCount
-    +int ErrorCount
-    +void Reset()
-    +void UpdateConnectionTime()
-    +void StartConnection()
-    +void EndConnection()
-    +void IncrementCounters()
-    +void UpdateResponseTime()
-    +string ToCsv()
-    +{static} string CsvHeader
+    +ConnectionCount: int
+    +SendSuccessCount: int
+    +ReceiveSuccessCount: int
+    +TimeoutCount: int
+    +ErrorCount: int
+    +ResponseTimes: List<double>
 }
-
-class CommandModeConverter {
-    +object Convert()
-    +object ConvertBack()
-}
-
-class DelimiterTypeConverter {
-    +object Convert()
-    +object ConvertBack()
-}
-
-class CommandExecutionManager {
-    -DateTime lastExecutionTime
-    -int lastWaitTime
-    +bool CanExecuteCommand(Command command)
-    +void NotifyCommandExecution(Command command)
-    +double GetElapsedTime()
-}
-
-MainWindow o-- ICommunicator
-MainWindow o-- Command
-MainWindow o-- CommunicationSettings
-MainWindow o-- CommunicationStatistics
-MainWindow o-- LogEntry
-MainWindow o-- CommandExecutionManager
-TcpCommunicator ..|> ICommunicator
-TcpCommunicator o-- CommunicationSettings
-
-@enduml
 ....
 
-=== クラス説明
+=== 通信処理の設計
 
-==== MainWindow
-* アプリケーションのメインウィンドウを管理
-* 通信制御とログ管理を実装
-* 単発/繰り返し送受信の制御
-* タブ切り替えの管理
-* UIイベントの処理
-* エラー処理と記録
-* 応答時間の計測と統計処理
+==== シーケンス送受信の流れ
 
-==== Command
-* コマンド情報の管理
-* タイムアウトと待ち時間の個別設定
-* 実行状態の管理
-* 応答時間の計測
+[plantuml]
+....
+participant "MainWindow" as Main
+participant "CommandQueue" as Queue
+participant "CommandExecutionManager" as Exec
+participant "TcpCommunicator" as TCP
 
-==== ICommunicator
-* 通信機能のインターフェース
-* 将来的なRS232C対応のための抽象化
-* 基本的な通信操作を定義
-
-==== TcpCommunicator
-* TCP通信の実装
-* 非同期通信処理
-* デリミタ処理の実装
-* 接続状態の管理
-
-==== LogEntry
-* 送受信/エラーログのデータ構造
-* タイムスタンプ管理
-* 通信結果の記録
-* エラー情報の記録
-* 応答時間の記録
-* CSV形式エクスポート
-
-==== CommunicationSettings
-* TCP通信パラメータの管理
-* デリミタ設定の管理
-
-==== CommunicationStatistics
-* 通信統計情報の管理
-* 接続時間の計測
-* 送受信カウンターの管理
-* 応答時間の統計処理
-* CSV形式エクスポート
-
-==== CommandModeConverter
-* 送受信モードの表示変換
-* 日本語表示とコード値の相互変換
-
-==== DelimiterTypeConverter
-* デリミタ設定の表示変換
-* 表示用文字列とコード値の相互変換
+Main -> Exec : EnqueueCommand()
+activate Exec
+Exec -> Queue : Enqueue()
+Queue -> Queue : OnCommandAvailable
+Queue -> Exec : ExecuteNext()
+Exec -> TCP : SendAsync()
+TCP -> TCP : WaitForResponse()
+TCP --> Exec : Response
+Exec -> Queue : CompleteCommand()
+Queue -> Queue : ProcessNextCommand
+deactivate Exec
+....

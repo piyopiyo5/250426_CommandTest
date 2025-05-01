@@ -1,6 +1,57 @@
 == 開発環境
-* 開発言語：C#
-* フレームワーク：.NET 8.0
-* UIフレームワーク：WPF
-* 開発ツール：Visual Studio 2022
-* 対象OS：Windows 10/11
+
+=== 開発ツール
+* Visual Studio 2022
+* .NET 6.0 SDK
+* Git
+
+=== 使用技術
+* WPF (Windows Presentation Foundation)
+* C# 10.0
+* TCP/IP通信
+
+=== 開発言語とバージョン
+* C# 10.0
+* XAML
+
+=== フレームワーク
+* .NET 6.0
+* WPF (.NET 6.0)
+
+=== 使用ライブラリ
+* 標準ライブラリのみを使用
+* サードパーティライブラリは不使用
+
+=== コーディング規約
+* C#一般的な命名規則に準拠
+* メソッド名：パスカルケース
+* 変数名：キャメルケース
+* プライベートフィールド：アンダースコア付きキャメルケース
+* インターフェース名：Iプレフィックス
+
+=== 実装方針
+* コードビハインドベースの実装
+* シンプルな構造を維持
+* コードの再利用性を考慮
+* エラー処理の徹底
+
+=== ビルド環境
+* Debug/Releaseの2構成
+* コンパイラ警告レベル：最大
+* Nullable参照型：有効
+
+=== デバッグ環境
+* Visual Studioデバッガー
+* Output/Immediateウィンドウ
+* WPF Live Visual Tree
+* WPF Snoop（必要に応じて）
+
+=== ソース管理
+* Git
+* .gitignoreで生成ファイルを除外
+* ブランチ戦略：main/feature方式
+
+=== ドキュメント
+* AsciiDoc形式
+* PlantUMLによる図表生成
+* Visual Studio Code + AsciiDoc拡張

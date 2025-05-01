@@ -1,17 +1,24 @@
-= コマンド送受信アプリケーション 仕様設計書
+= コマンド送受信アプリケーション仕様書
+:toc:
+:toc-title: 目次
 :sectnums:
+:source-highlighter: highlightjs
 
 include::chapters/overview.adoc[]
 
-include::chapters/implementation_status.adoc[]
-
 include::chapters/main_features.adoc[]
+
+include::chapters/design_policy.adoc[]
 
 include::chapters/system_design.adoc[]
 
 include::chapters/screen_design.adoc[]
 
+include::chapters/file_structure.adoc[]
+
 include::chapters/error_handling.adoc[]
+
+include::chapters/implementation_status.adoc[]
 
 include::chapters/future_extensions.adoc[]
 

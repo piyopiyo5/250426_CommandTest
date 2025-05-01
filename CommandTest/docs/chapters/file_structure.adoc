@@ -1,0 +1,82 @@
+== ファイル構成
+
+=== プロジェクト構造
+[source]
+----
+CommandTest/
+├── CommandTest.sln                 # ソリューションファイル
+├── CommandTest.csproj             # プロジェクトファイル
+├── CommandTest.csproj.user        # ユーザー固有のプロジェクト設定
+├── App.xaml                        # アプリケーションの定義
+├── App.xaml.cs                     # アプリケーションのコードビハインド
+├── AssemblyInfo.cs                 # アセンブリ情報
+├── MainWindow.xaml                 # メインウィンドウのUI定義
+├── MainWindow.xaml.cs              # メインウィンドウのコードビハインド
+├── ResponseTimeDistributionWindow.xaml    # 応答時間分布グラフ画面
+├── ResponseTimeDistributionWindow.xaml.cs # 応答時間分布グラフ画面のコードビハインド
+├── .gitignore                     # Gitの除外設定ファイル
+├── Communications/                 # 通信関連の実装
+│   ├── ICommunicator.cs           # 通信インターフェース
+│   └── TcpCommunicator.cs         # TCP/IP通信の実装
+├── Models/                        # データモデルとビジネスロジック
+│   ├── AsciiControlCharacter.cs   # ASCII制御文字の管理
+│   ├── Command.cs                 # コマンドモデル
+│   ├── CommandQueue.cs           # コマンド実行キュー
+│   ├── CommandExecutionManager.cs # コマンド実行の管理
+│   ├── CommandRequest.cs         # コマンド実行要求
+│   ├── CommunicationSettings.cs  # 通信設定
+│   ├── CommunicationStatistics.cs # 通信統計
+│   ├── DelimiterTypeConverter.cs # デリミタ型の変換
+│   ├── CommandModeConverter.cs   # コマンドモード型の変換
+│   └── LogEntry.cs               # ログエントリモデル
+├── Views/                        # 画面のUI定義とコードビハインド
+│   ├── AsciiControlCharacterWindow.xaml    # 制御文字選択画面
+│   ├── AsciiControlCharacterWindow.xaml.cs # 制御文字選択画面のコードビハインド
+│   ├── CommandEditWindow.xaml              # コマンド編集画面
+│   └── CommandEditWindow.xaml.cs           # コマンド編集画面のコードビハインド
+├── bin/                          # ビルド出力ディレクトリ
+│   ├── Debug/                    # デバッグビルドの出力
+│   └── Release/                  # リリースビルドの出力
+├── obj/                          # 中間ファイル
+└── docs/                         # ドキュメント
+    ├── specification.adoc        # 仕様書のメインファイル
+    └── chapters/                 # 仕様書の各章
+        ├── overview.adoc         # 概要
+        ├── main_features.adoc    # 主要機能
+        ├── design_policy.adoc    # 設計方針
+        ├── system_design.adoc    # システム設計
+        ├── screen_design.adoc    # 画面設計
+        ├── error_handling.adoc   # エラー処理
+        ├── file_structure.adoc   # ファイル構成
+        ├── implementation_status.adoc # 実装状況
+        ├── development_environment.adoc # 開発環境
+        └── future_extensions.adoc # 将来の拡張
+
+=== 各ディレクトリの役割
+
+==== Models/
+データモデルとビジネスロジックを格納するディレクトリです。
+アプリケーションのデータ構造と主要な処理を定義します。
+
+==== Views/
+画面のUI定義とコードビハインドを格納するディレクトリです。
+各画面のXAMLファイルと、その処理を行うC#ファイルを含みます。
+画面のロジックはコードビハインドで直接実装します。
+
+==== Communications/
+通信関連の実装を格納するディレクトリです。
+通信インターフェースとその具体的な実装を含みます。
+
+==== docs/
+プロジェクトのドキュメントを格納するディレクトリです。
+AsciiDocで記述された仕様書と、その構成要素を含みます。
+
+==== bin/, obj/
+ビルド時に生成されるファイルを格納するディレクトリです。
+Gitの管理対象外となります。
+
+=== Git管理対象外ファイル
+- bin/ディレクトリ（ビルド出力）
+- obj/ディレクトリ（中間ファイル）
+- .vs/ディレクトリ（Visual Studio一時ファイル）
+- CommandTest.csproj.user（ユーザー固有の設定）
