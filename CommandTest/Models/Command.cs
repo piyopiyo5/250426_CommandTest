@@ -30,5 +30,20 @@ namespace CommandTest.Models
         {
             return (DateTime.Now - SendTime).TotalMilliseconds;
         }
+
+        /// <summary>
+        /// コマンドのクローンを作成します
+        /// </summary>
+        /// <returns>コマンドのクローン</returns>
+        public Command Clone()
+        {
+            return new Command
+            {
+                CommandText = CommandText,
+                Mode = Mode,
+                Timeout = Timeout,
+                Interval = Interval
+            };
+        }
     }
 }

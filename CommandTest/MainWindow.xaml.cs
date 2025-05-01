@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Linq;
 using CommandTest.Communications;
 using CommandTest.Models;
+using CommandTest.Views;
 
 static class VisualTreeHelperExtensions
 {
@@ -155,7 +156,12 @@ namespace CommandTest
             }
 
             ExecuteButton.IsEnabled = false;
-            executionManager.EnqueueCommand(SingleCommand, false);
+            
+            // コマンドテキスト内の制御文字表示名を実際の制御文字に変換
+            var command = SingleCommand.Clone();
+            command.CommandText = AsciiControlCharacter.ConvertDisplayNameToControlCharacters(command.CommandText);
+            
+            executionManager.EnqueueCommand(command, false);
         }
 
         private async void OnCommandExecutionCompleted(object? sender, CommandExecutionEventArgs e)
@@ -195,7 +201,9 @@ namespace CommandTest
                 {
                     var index = SequenceCommands.IndexOf(command);
                     var nextIndex = (index + 1) % SequenceCommands.Count;
-                    executionManager.EnqueueCommand(SequenceCommands[nextIndex], true);
+                    var nextCommand = SequenceCommands[nextIndex].Clone();
+                    nextCommand.CommandText = AsciiControlCharacter.ConvertDisplayNameToControlCharacters(nextCommand.CommandText);
+                    executionManager.EnqueueCommand(nextCommand, true);
                 }
             });
         }
@@ -242,13 +250,32 @@ namespace CommandTest
 
         private void AddCommandButton_Click(object sender, RoutedEventArgs e)
         {
-            SequenceCommands.Add(new Command
+            var dialog = new CommandEditWindow();
+            dialog.Owner = this;
+
+            if (dialog.ShowDialog() == true && dialog.ResultCommand != null)
             {
-                CommandText = "",
-                Mode = "Normal",
-                Timeout = 1000,
-                Interval = 0
-            });
+                SequenceCommands.Add(dialog.ResultCommand);
+            }
+        }
+
+        private void EditCommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SequenceCommandsDataGrid.SelectedItem is Command selectedCommand)
+            {
+                var dialog = new CommandEditWindow(selectedCommand);
+                dialog.Owner = this;
+
+                if (dialog.ShowDialog() == true && dialog.ResultCommand != null)
+                {
+                    var index = SequenceCommands.IndexOf(selectedCommand);
+                    SequenceCommands[index] = dialog.ResultCommand;
+                }
+            }
+            else
+            {
+                MessageBox.Show("編集するコマンドを選択してください。", "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private void RemoveCommandButton_Click(object sender, RoutedEventArgs e)
@@ -320,7 +347,10 @@ namespace CommandTest
                 sequenceCts = new CancellationTokenSource();
                 if (SequenceCommands.Count > 0)
                 {
-                    executionManager.EnqueueCommand(SequenceCommands[0], true);
+                    // シーケンスの最初のコマンドの制御文字を変換
+                    var command = SequenceCommands[0].Clone();
+                    command.CommandText = AsciiControlCharacter.ConvertDisplayNameToControlCharacters(command.CommandText);
+                    executionManager.EnqueueCommand(command, true);
                 }
             }
             catch (Exception ex)
@@ -456,6 +486,51 @@ namespace CommandTest
             var window = new ResponseTimeDistributionWindow(statistics);
             window.Owner = this;
             window.Show();
+        }
+
+        private void InsertControlCharacterToSequence_Click(object sender, RoutedEventArgs e)
+        {
+            if (SequenceCommandsDataGrid.SelectedCells.Count == 0)
+            {
+                MessageBox.Show("コマンドを選択してください。", "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new AsciiControlCharacterWindow
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedControlCharacter))
+            {
+                var cell = SequenceCommandsDataGrid.SelectedCells[0];
+                if (cell.Column is DataGridTextColumn && cell.Column.Header.ToString() == "コマンド")
+                {
+                    var command = (Command)cell.Item;
+                    var currentText = command.CommandText ?? string.Empty;
+                    command.CommandText = currentText + dialog.SelectedControlCharacter;
+                }
+            }
+        }
+
+        private void InsertControlCharacter_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new AsciiControlCharacterWindow
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedControlCharacter))
+            {
+                // 選択された制御文字を現在のカーソル位置に挿入
+                int caretIndex = CommandTextBox.CaretIndex;
+                string currentText = CommandTextBox.Text ?? string.Empty;
+                string newText = currentText.Insert(caretIndex, dialog.SelectedControlCharacter);
+                
+                CommandTextBox.Text = newText;
+                CommandTextBox.CaretIndex = caretIndex + dialog.SelectedControlCharacter.Length;
+                CommandTextBox.Focus();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

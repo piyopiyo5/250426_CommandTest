@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:CommandTest.Models"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="コマンド送受信アプリ" Height="1000" Width="1200">
+        Title="コマンド送受信アプリ" Height="1080" Width="1200">
 
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo/>
@@ -99,14 +99,28 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBox Grid.Row="0" Grid.Column="0" 
-                                     x:Name="CommandTextBox"
-                                     Text="{Binding SingleCommand.CommandText, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="5"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalScrollBarVisibility="Auto"
-                                     MinHeight="50"/>
+                            <Grid Grid.Row="0" Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBox Grid.Row="0"
+                                         x:Name="CommandTextBox"
+                                         Text="{Binding SingleCommand.CommandText, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="5"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         VerticalScrollBarVisibility="Auto"
+                                         MinHeight="50"/>
+                                
+                                <Button Grid.Row="1"
+                                        Content="制御記号挿入"
+                                        HorizontalAlignment="Right"
+                                        Margin="5,0,5,5"
+                                        Padding="10,3"
+                                        Click="InsertControlCharacter_Click"/>
+                            </Grid>
 
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="5">
                                 <GroupBox Header="送受信モード">
@@ -159,14 +173,23 @@
                     </Grid.RowDefinitions>
 
                     <!-- シーケンス制御部 -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
-                        <Button x:Name="AddCommandButton" Content="追加" Width="80" Margin="5" Click="AddCommandButton_Click"/>
-                        <Button x:Name="RemoveCommandButton" Content="削除" Width="80" Margin="5" Click="RemoveCommandButton_Click"/>
-                        <Button x:Name="MoveUpButton" Content="↑" Width="40" Margin="5" Click="MoveUpButton_Click"/>
-                        <Button x:Name="MoveDownButton" Content="↓" Width="40" Margin="5" Click="MoveDownButton_Click"/>
-                        <Button x:Name="StartSequenceButton" Content="開始" Width="80" Margin="5" Click="StartSequenceButton_Click"/>
-                        <Button x:Name="StopSequenceButton" Content="停止" Width="80" Margin="5" Click="StopSequenceButton_Click"/>
-                    </StackPanel>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="5">
+                            <Button x:Name="AddCommandButton" Content="追加" Width="80" Margin="5" Click="AddCommandButton_Click"/>
+                            <Button x:Name="EditCommandButton" Content="編集" Width="80" Margin="5" Click="EditCommandButton_Click"/>
+                            <Button x:Name="RemoveCommandButton" Content="削除" Width="80" Margin="5" Click="RemoveCommandButton_Click"/>
+                            <Button x:Name="MoveUpButton" Content="↑" Width="40" Margin="5" Click="MoveUpButton_Click"/>
+                            <Button x:Name="MoveDownButton" Content="↓" Width="40" Margin="5" Click="MoveDownButton_Click"/>
+                            <Button x:Name="StartSequenceButton" Content="開始" Width="80" Margin="5" Click="StartSequenceButton_Click"/>
+                            <Button x:Name="StopSequenceButton" Content="停止" Width="80" Margin="5" Click="StopSequenceButton_Click"/>
+                        </StackPanel>
+                    </Grid>
 
                     <!-- コマンドリスト -->
                     <DataGrid Grid.Row="1" 
@@ -174,6 +197,7 @@
                               ItemsSource="{Binding SequenceCommands}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
+                              IsReadOnly="True"
                               Margin="5">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="コマンド" 
