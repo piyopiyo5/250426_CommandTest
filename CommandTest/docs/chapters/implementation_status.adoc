@@ -9,12 +9,17 @@ CommandTest/
 ├── AssemblyInfo.cs             # アセンブリ情報
 ├── MainWindow.xaml             # メインウィンドウのUI定義
 ├── MainWindow.xaml.cs          # メインウィンドウのロジック
+├── ResponseTimeDistributionWindow.xaml      # 応答時間分布グラフ表示
+├── ResponseTimeDistributionWindow.xaml.cs   # 応答時間グラフのロジック
 ├── Communications/             # 通信関連
 │   ├── ICommunicator.cs       # 通信インターフェース
 │   └── TcpCommunicator.cs     # TCP通信の実装
 ├── Models/                     # モデルクラス
 │   ├── Command.cs             # コマンド情報
+│   ├── CommandExecutionManager.cs  # 実行制御
 │   ├── CommandModeConverter.cs    # コマンドモード変換
+│   ├── CommandQueue.cs           # コマンドキュー管理
+│   ├── CommandRequest.cs         # コマンド実行要求
 │   ├── CommunicationSettings.cs   # 通信設定
 │   ├── CommunicationStatistics.cs # 統計情報
 │   ├── DelimiterTypeConverter.cs  # デリミタ変換
@@ -30,6 +35,9 @@ CommandTest/
 ** 接続/切断制御
 ** 非同期通信処理
 ** デリミタ処理（CR/LF/CRLF）
+** UTF-8エンコーディングによるデータ送受信
+** バッファサイズ1024バイトでの受信処理
+** ストリーム制御（NetworkStream）
 ** エラー処理
 
 ==== 送受信モード
@@ -42,6 +50,18 @@ CommandTest/
 ** タイムアウト制御
 * レスポンスなしモード（送信のみ）
 ** データ送信処理
+
+==== コマンド管理システム
+* コマンド基本属性
+** テキスト
+** モード（通常/受信のみ/送信のみ）
+** タイムアウト時間
+** 実行間隔
+* 実行状態管理
+** 実行中フラグ
+** 最終実行時刻
+** 送信時刻
+* 応答時間計測（ミリ秒精度）
 
 ==== 実行機能
 1. 単発送受信
@@ -59,6 +79,13 @@ CommandTest/
 *** タイムアウト時間
 *** 次のコマンド送信までの待ち時間
 ** シーケンス制御（開始/停止）
+** データグリッドによる編集機能
+
+==== 実行制御システム
+* 非同期実行制御（Task基盤）
+* キャンセレーショントークンによる実行制御
+* イベントベースの実行完了通知
+* スレッド安全なキュー操作
 
 ==== ログ・統計機能
 1. 送受信履歴
@@ -69,6 +96,7 @@ CommandTest/
 ** 応答時間（通常モードのみ、1ms精度）
 ** CSV形式エクスポート
 ** 履歴クリア
+** データグリッド表示
 
 2. 統計情報
 ** 接続情報
@@ -88,3 +116,4 @@ CommandTest/
 *** その他エラー発生数
 ** CSV形式エクスポート
 ** 統計クリア
+** 応答時間分布グラフ表示
