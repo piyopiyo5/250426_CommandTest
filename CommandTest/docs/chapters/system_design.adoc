@@ -1,12 +1,14 @@
 == システム設計
+ファイル: docs/chapters/system_design.adoc
 
 === 全体構成
+実装: App.xaml, App.xaml.cs
 
 アプリケーションは以下の3つの主要コンポーネントで構成されます：
 
-* Models - ビジネスロジックとデータモデル
-* Views - 画面のUI定義とコードビハインド
-* Communications - 通信機能の実装
+* Models - ビジネスロジックとデータモデル（Models/ディレクトリ）
+* Views - 画面のUI定義とコードビハインド（Views/ディレクトリ）
+* Communications - 通信機能の実装（Communications/ディレクトリ）
 
 [plantuml]
 ....
@@ -45,22 +47,28 @@ package "CommandTest" {
 === 各コンポーネントの役割
 
 ==== Models
-* Command - コマンドのデータモデル
-* CommandQueue - コマンドの実行キュー
-* CommunicationSettings - 通信設定の管理
-* CommunicationStatistics - 通信統計の管理
-* AsciiControlCharacter - ASCII制御文字の管理（静的クラス）
+実装ファイル：
+
+* Command - コマンドのデータモデル (Models/Command.cs)
+* CommandQueue - コマンドの実行キュー (Models/CommandQueue.cs)
+* CommunicationSettings - 通信設定の管理 (Models/CommunicationSettings.cs)
+* CommunicationStatistics - 通信統計の管理 (Models/CommunicationStatistics.cs)
+* AsciiControlCharacter - ASCII制御文字の管理（静的クラス） (Models/AsciiControlCharacter.cs)
 
 ==== Views
-* MainWindow - メインウィンドウのUI/コードビハインド
-* CommandEditWindow - コマンド編集画面のUI/コードビハインド
-* AsciiControlCharacterWindow - ASCII制御文字選択画面のUI/コードビハインド
-* ResponseTimeDistributionWindow - 応答時間グラフ画面のUI/コードビハインド
+実装ファイル：
+
+* MainWindow - メインウィンドウのUI/コードビハインド (MainWindow.xaml/cs)
+* CommandEditWindow - コマンド編集画面のUI/コードビハインド (Views/CommandEditWindow.xaml/cs)
+* AsciiControlCharacterWindow - ASCII制御文字選択画面のUI/コードビハインド (Views/AsciiControlCharacterWindow.xaml/cs)
+* ResponseTimeDistributionWindow - 応答時間グラフ画面のUI/コードビハインド (ResponseTimeDistributionWindow.xaml/cs)
 
 ==== Communications
-* ICommunicator - 通信インターフェース
-* TcpCommunicator - TCP/IP通信の実装
-* CommandExecutionManager - コマンド実行の管理
+実装ファイル：
+
+* ICommunicator - 通信インターフェース (Communications/ICommunicator.cs)
+* TcpCommunicator - TCP/IP通信の実装 (Communications/TcpCommunicator.cs)
+* CommandExecutionManager - コマンド実行の管理 (Models/CommandExecutionManager.cs)
 
 === データの流れ
 
@@ -131,24 +139,109 @@ class CommunicationStatistics {
 
 === 通信処理の設計
 
+==== コマンド実行の仕組み
+
+コマンド実行は以下の3つのモードをサポートしています：
+
+* Normal - コマンドを送信し、応答を待ち受けます
+* NoCommand - 送信せずに受信のみを行います
+* NoResponse - 応答を待たずにコマンドを送信します
+
+各モードでタイムアウトや例外が発生した場合でも、実行ループは停止せず次のコマンドの処理を継続します。
+
 ==== シーケンス送受信の流れ
 
 [plantuml]
 ....
 participant "MainWindow" as Main
-participant "CommandQueue" as Queue
 participant "CommandExecutionManager" as Exec
+participant "CommandQueue" as Queue
 participant "TcpCommunicator" as TCP
 
 Main -> Exec : EnqueueCommand()
 activate Exec
+
 Exec -> Queue : Enqueue()
-Queue -> Queue : OnCommandAvailable
-Queue -> Exec : ExecuteNext()
-Exec -> TCP : SendAsync()
-TCP -> TCP : WaitForResponse()
-TCP --> Exec : Response
-Exec -> Queue : CompleteCommand()
-Queue -> Queue : ProcessNextCommand
+activate Queue
+Queue --> Exec
+deactivate Queue
+
+Exec -> Exec : StartExecution()
+
+group ExecutionLoop
+    loop while !cancellationRequested
+        Exec -> Queue : TryDequeue()
+        activate Queue
+        Queue --> Exec : CommandRequest
+        deactivate Queue
+        
+        alt CommandRequest != null
+            Exec -> Exec : request.StartExecution()
+            
+            alt request.Command.Mode == "Normal"
+                create CancellationTokenSource as CTS
+                Exec -> CTS : new(command.Timeout)
+                activate CTS
+                
+                Exec -> TCP : Send(command.CommandText)
+                activate TCP
+                TCP --> Exec
+                deactivate TCP
+                
+                group Task.Run(Receive)
+                    Exec -> TCP : Receive()
+                    activate TCP
+                    alt success case
+                        TCP --> Exec : ReceivedData
+                    else timeout case
+                        CTS -> CTS : Cancel()
+                        note right: タイムアウト時間経過
+                        TCP --> Exec : OperationCanceledException
+                        note right: 次のコマンドへ継続
+                    end
+                    deactivate TCP
+                end
+                destroy CTS
+                
+            else request.Command.Mode == "NoCommand"
+                create CancellationTokenSource as CTS
+                Exec -> CTS : new(command.Timeout)
+                activate CTS
+                
+                group Task.Run(Receive)
+                    Exec -> TCP : Receive()
+                    activate TCP
+                    alt success case
+                        TCP --> Exec : ReceivedData
+                    else timeout case
+                        CTS -> CTS : Cancel()
+                        note right: タイムアウト時間経過
+                        TCP --> Exec : OperationCanceledException
+                        note right: 次のコマンドへ継続
+                    end
+                    deactivate TCP
+                end
+                destroy CTS
+                
+            else request.Command.Mode == "NoResponse"
+                Exec -> TCP : Send(command.CommandText)
+                activate TCP
+                TCP --> Exec
+                deactivate TCP
+            end
+            
+            Exec -> Exec : request.CompleteExecution()
+            Exec -> Exec : OnCommandExecutionCompleted()
+            
+            opt request.WaitTimeAfterExecution > 0
+                Exec -> Exec : Task.Delay()
+            end
+            
+        else CommandRequest == null
+            Exec -> Exec : Task.Delay(100)
+        end
+    end
+end
+
 deactivate Exec
 ....

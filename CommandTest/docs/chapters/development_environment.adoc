@@ -1,20 +1,38 @@
 == 開発環境
+ファイル: docs/chapters/development_environment.adoc
 
 === 開発ツール
+実装ファイル：
+* CommandTest.sln - ソリューションファイル
+* CommandTest.csproj - プロジェクト設定
+* .gitignore - Git除外設定
+
 * Visual Studio 2022
 * .NET 6.0 SDK
 * Git
 
 === 使用技術
+実装ファイル：
+* App.xaml/cs - WPFアプリケーション定義
+* MainWindow.xaml/cs - メインウィンドウ実装
+* AssemblyInfo.cs - アセンブリ情報
+
 * WPF (Windows Presentation Foundation)
 * C# 10.0
 * TCP/IP通信
 
 === 開発言語とバージョン
+実装ファイル：
+* CommandTest.csproj - 言語バージョン設定
+* AssemblyInfo.cs - アセンブリバージョン情報
+
 * C# 10.0
 * XAML
 
 === フレームワーク
+実装ファイル：
+* CommandTest.csproj - ターゲットフレームワーク設定
+
 * .NET 6.0
 * WPF (.NET 6.0)
 
@@ -23,6 +41,10 @@
 * サードパーティライブラリは不使用
 
 === コーディング規約
+適用ファイル：
+* すべての.csファイル
+* すべての.xamlファイル
+
 * C#一般的な命名規則に準拠
 * メソッド名：パスカルケース
 * 変数名：キャメルケース
@@ -30,28 +52,47 @@
 * インターフェース名：Iプレフィックス
 
 === 実装方針
+実装例：
+* MainWindow.xaml.cs - コードビハインドベース
+* Models/AsciiControlCharacter.cs - 静的クラスの活用
+* Communications/ICommunicator.cs - インターフェースによる抽象化
+
 * コードビハインドベースの実装
 * シンプルな構造を維持
 * コードの再利用性を考慮
 * エラー処理の徹底
 
 === ビルド環境
+実装ファイル：
+* CommandTest.csproj - ビルド設定
+* AssemblyInfo.cs - アセンブリ設定
+
 * Debug/Releaseの2構成
 * コンパイラ警告レベル：最大
 * Nullable参照型：有効
 
 === デバッグ環境
+実装ファイル：
+* CommandTest.csproj.user - デバッグ設定
+
 * Visual Studioデバッガー
 * Output/Immediateウィンドウ
 * WPF Live Visual Tree
 * WPF Snoop（必要に応じて）
 
 === ソース管理
+実装ファイル：
+* .gitignore - 除外設定
+
 * Git
 * .gitignoreで生成ファイルを除外
 * ブランチ戦略：main/feature方式
 
 === ドキュメント
+実装ファイル：
+* docs/specification.adoc - メインドキュメント
+* docs/chapters/*.adoc - 各章ドキュメント
+
 * AsciiDoc形式
 * PlantUMLによる図表生成
 * Visual Studio Code + AsciiDoc拡張

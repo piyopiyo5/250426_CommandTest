@@ -1,6 +1,12 @@
 == エラー処理
+ファイル: docs/chapters/error_handling.adoc
 
 === 通信エラー
+実装ファイル：
+* Communications/TcpCommunicator.cs - TCP通信のエラー処理
+* Models/CommandExecutionManager.cs - コマンド実行時のエラー処理
+* Models/CommunicationStatistics.cs - エラー統計の管理
+
 * 接続失敗
 * 切断検知
 * タイムアウト
@@ -8,6 +14,12 @@
 * データ受信失敗
 
 === ユーザー入力エラー
+実装ファイル：
+* Models/CommunicationSettings.cs - 通信設定のバリデーション
+* Models/Command.cs - コマンドのバリデーション
+* Models/CommandModeConverter.cs - モード設定のバリデーション
+* Models/DelimiterTypeConverter.cs - デリミタ設定のバリデーション
+
 * 無効な接続パラメータ
 * 無効なコマンド形式
 * 無効な設定値

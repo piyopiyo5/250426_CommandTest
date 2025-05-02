@@ -1,10 +1,26 @@
 == 将来的な拡張性
+ファイル: docs/chapters/future_extensions.adoc
 
 === 通信方式の追加
+実装予定ファイル：
+* Communications/Rs232cCommunicator.cs - RS232C通信の実装
+* Communications/ISerialCommunicator.cs - シリアル通信インターフェース
+* Models/SerialCommunicationSettings.cs - シリアル通信設定
+
 * RS232C通信の実装
 * その他の通信プロトコルへの対応
 
 === 機能拡張
+実装予定ファイル：
+* Models/CommandTemplate.cs - コマンドテンプレート機能
+* Models/MacroExecutor.cs - マクロ実行エンジン
+* Models/ScriptEngine.cs - スクリプト実行エンジン
+* Models/ProtocolAnalyzer.cs - プロトコル解析機能
+* Views/TemplateEditWindow.xaml/cs - テンプレート編集画面
+* Views/MacroEditWindow.xaml/cs - マクロ編集画面
+* Views/ScriptEditWindow.xaml/cs - スクリプト編集画面
+* Views/ProtocolAnalyzerWindow.xaml/cs - プロトコル解析画面
+
 * コマンドテンプレート機能
 * マクロ機能
 * スクリプト実行機能

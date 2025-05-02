@@ -1,29 +1,34 @@
 == 実装状況
+ファイル: docs/chapters/implementation_status.adoc
 
 === 実装済み機能
 * 基本機能
-** TCP/IP通信機能
-** 単発送受信機能
-** 繰り返し送受信機能
-** デリミタ設定機能
-** タイムアウト設定機能
-** 送受信履歴表示機能
-** 統計情報表示機能
+実装ファイル：
+** TCP/IP通信機能 (Communications/TcpCommunicator.cs)
+** 単発送受信機能 (Models/CommandExecutionManager.cs)
+** 繰り返し送受信機能 (Models/CommandQueue.cs)
+** デリミタ設定機能 (Models/DelimiterTypeConverter.cs)
+** タイムアウト設定機能 (Models/Command.cs)
+** 送受信履歴表示機能 (Models/LogEntry.cs)
+** 統計情報表示機能 (Models/CommunicationStatistics.cs)
 
 * UI機能
-** コマンドのポップアップ編集機能
-** ASCII制御文字選択機能
-** コマンドリストの管理機能
-** 応答時間グラフ表示機能
-** CSV形式でのエクスポート機能
+実装ファイル：
+** コマンドのポップアップ編集機能 (Views/CommandEditWindow.xaml/cs)
+** ASCII制御文字選択機能 (Views/AsciiControlCharacterWindow.xaml/cs)
+** コマンドリストの管理機能 (MainWindow.Controls.cs)
+** 応答時間グラフ表示機能 (ResponseTimeDistributionWindow.xaml/cs)
+** CSV形式でのエクスポート機能 (MainWindow.UI.cs)
 
 === 実装方針の変更点
 * MVVMパターンからの変更
+実装ファイル：MainWindow.xaml/cs, MainWindow.Base.cs
 ** ViewModelレイヤーを廃止
 ** コードビハインドでの直接実装に変更
 ** データバインディングを最小限に抑制
 
 * 実装のシンプル化
+実装ファイル：Models/AsciiControlCharacter.cs, MainWindow.Init.cs
 ** ASCII制御文字機能を静的クラスに統合
 ** ウィンドウ間のデータ受け渡しを単純化
 ** イベントハンドラでの直接的な処理に変更

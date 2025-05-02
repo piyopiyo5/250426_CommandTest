@@ -1,4 +1,5 @@
 == ファイル構成
+ファイル: docs/chapters/file_structure.adoc
 
 === プロジェクト構造
 [source]
@@ -12,6 +13,10 @@ CommandTest/
 ├── AssemblyInfo.cs                 # アセンブリ情報
 ├── MainWindow.xaml                 # メインウィンドウのUI定義
 ├── MainWindow.xaml.cs              # メインウィンドウのコードビハインド
+├── MainWindow.UI.cs               # UI関連の処理
+├── MainWindow.Base.cs             # 基本機能の実装
+├── MainWindow.Init.cs             # 初期化処理
+├── MainWindow.Controls.cs         # コントロールイベントハンドラ
 ├── ResponseTimeDistributionWindow.xaml    # 応答時間分布グラフ画面
 ├── ResponseTimeDistributionWindow.xaml.cs # 応答時間分布グラフ画面のコードビハインド
 ├── .gitignore                     # Gitの除外設定ファイル
@@ -55,19 +60,43 @@ CommandTest/
 === 各ディレクトリの役割
 
 ==== Models/
+実装ファイル：
+* AsciiControlCharacter.cs - ASCII制御文字の管理
+* Command.cs - コマンドモデル
+* CommandQueue.cs - コマンド実行キュー
+* CommandExecutionManager.cs - コマンド実行の管理
+* CommandRequest.cs - コマンド実行要求
+* CommunicationSettings.cs - 通信設定
+* CommunicationStatistics.cs - 通信統計
+* DelimiterTypeConverter.cs - デリミタ型の変換
+* CommandModeConverter.cs - コマンドモード型の変換
+* LogEntry.cs - ログエントリモデル
+
 データモデルとビジネスロジックを格納するディレクトリです。
 アプリケーションのデータ構造と主要な処理を定義します。
 
 ==== Views/
+実装ファイル：
+* AsciiControlCharacterWindow.xaml/cs - 制御文字選択画面
+* CommandEditWindow.xaml/cs - コマンド編集画面
+
 画面のUI定義とコードビハインドを格納するディレクトリです。
 各画面のXAMLファイルと、その処理を行うC#ファイルを含みます。
 画面のロジックはコードビハインドで直接実装します。
 
 ==== Communications/
+実装ファイル：
+* ICommunicator.cs - 通信インターフェース
+* TcpCommunicator.cs - TCP/IP通信の実装
+
 通信関連の実装を格納するディレクトリです。
 通信インターフェースとその具体的な実装を含みます。
 
 ==== docs/
+実装ファイル：
+* specification.adoc - 仕様書のメインファイル
+* chapters/*.adoc - 仕様書の各章
+
 プロジェクトのドキュメントを格納するディレクトリです。
 AsciiDocで記述された仕様書と、その構成要素を含みます。
 

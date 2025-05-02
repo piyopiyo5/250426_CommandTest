@@ -1,4 +1,5 @@
 == 主要機能
+ファイル: docs/chapters/main_features.adoc
 
 === 通信機能
 

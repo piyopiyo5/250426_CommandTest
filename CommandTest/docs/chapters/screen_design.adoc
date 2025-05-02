@@ -1,6 +1,13 @@
 == 画面設計
+ファイル: docs/chapters/screen_design.adoc
 
 === メイン画面
+実装ファイル：
+* MainWindow.xaml/cs - メインウィンドウの定義とコードビハインド
+* MainWindow.UI.cs - UI関連の処理
+* MainWindow.Base.cs - 基本機能の実装
+* MainWindow.Init.cs - 初期化処理
+* MainWindow.Controls.cs - コントロールイベントハンドラ
 
 メイン画面は以下の4つの領域で構成されます：
 
@@ -43,6 +50,8 @@ salt
 ....
 
 === コマンド編集画面
+実装ファイル：
+* Views/CommandEditWindow.xaml/cs - コマンド編集ウィンドウの定義とコードビハインド
 
 コマンドの追加・編集用のモーダルウィンドウです：
 
@@ -77,6 +86,9 @@ salt
 ....
 
 === ASCII制御文字選択画面
+実装ファイル：
+* Views/AsciiControlCharacterWindow.xaml/cs - ASCII制御文字選択ウィンドウの定義とコードビハインド
+* Models/AsciiControlCharacter.cs - ASCII制御文字の管理クラス
 
 ASCII制御文字を選択するためのモーダルウィンドウです：
 
@@ -102,6 +114,9 @@ salt
 ....
 
 === 応答時間分布グラフ画面
+実装ファイル：
+* ResponseTimeDistributionWindow.xaml/cs - 応答時間分布グラフウィンドウの定義とコードビハインド
+* Models/CommunicationStatistics.cs - 通信統計データの管理クラス
 
 応答時間の分布をグラフ表示するモーダルウィンドウです：
 
